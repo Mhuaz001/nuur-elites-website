@@ -1,7 +1,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Replace these two values with your own Supabase details.
+// Supabase connection
 const SUPABASE_URL = 'https://lrcnworfhrrntdltzgpe.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_yBLxiC7z_ZymMMveeQN9Ug_Bok2ubsZ';
 
@@ -10,30 +10,64 @@ const supabase = createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
+// Form elements
 const form = document.getElementById('applicationForm');
 const message = document.getElementById('formMessage');
 const submitButton = document.getElementById('submitButton');
 
+// Collect all selected courses
+function getSelectedCourses() {
+  return Array.from(
+    document.querySelectorAll('input[name="courseInterest"]:checked')
+  ).map(input => input.value);
+}
+
+// Submit registration
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
+  // Get selected courses
+  const selectedCourses = getSelectedCourses();
+
+  // Check that at least one course is selected
+  if (selectedCourses.length === 0) {
+    message.textContent = 'Please select at least one programme.';
+    message.style.color = 'red';
+    return;
+  }
+
+  // Disable button during submission
   submitButton.disabled = true;
   submitButton.textContent = 'Submitting...';
+
   message.textContent = 'Please wait while we submit your application.';
   message.style.color = '#155b37';
 
+  // Collect application information
   const application = {
     student_name: document.getElementById('studentName').value.trim(),
+
     date_of_birth: document.getElementById('dob').value || null,
+
     location: document.getElementById('location').value.trim(),
+
     guardian_name: document.getElementById('guardianName').value.trim(),
+
     relationship: document.getElementById('relationship').value,
+
     guardian_phone: document.getElementById('guardianPhone').value.trim(),
+
     guardian_email: document.getElementById('guardianEmail').value.trim() || null,
-    course_interest: document.getElementById('courseInterest').value,
+
+    // Save all selected courses
+    course_interest: selectedCourses.join(', '),
+
     delivery_mode: document.getElementById('deliveryMode').value,
+
     preferred_schedule: document.getElementById('preferredSchedule').value.trim() || null,
+
     additional_notes: document.getElementById('notes').value.trim() || null,
+
     status: 'pending'
   };
 
@@ -48,6 +82,7 @@ form.addEventListener('submit', async (event) => {
 
     message.textContent =
       'Thank you! Your registration has been submitted successfully. Our team will contact you.';
+
     message.style.color = 'green';
 
     form.reset();
@@ -57,6 +92,7 @@ form.addEventListener('submit', async (event) => {
 
     message.textContent =
       'We could not submit your application. Please try again or contact our office.';
+
     message.style.color = 'red';
 
   } finally {

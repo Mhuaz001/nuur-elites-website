@@ -292,9 +292,34 @@
         </section>
 
         <section id="applications" class="section">
-          <h2>Student Applications</h2>
-          <p>Review applications, approve applicants and manage registration records.</p>
-        </section>
+  <h2>Student Applications</h2>
+  <p>Review applications submitted through the Nuur Elites website.</p>
+
+  <div style="overflow-x: auto; margin-top: 20px;">
+    <table style="width: 100%; border-collapse: collapse; min-width: 750px;">
+      <thead>
+        <tr style="background: #155b37; color: white;">
+          <th style="padding: 12px;">Student</th>
+          <th style="padding: 12px;">Guardian</th>
+          <th style="padding: 12px;">Phone</th>
+          <th style="padding: 12px;">Programme(s)</th>
+          <th style="padding: 12px;">Learning Mode</th>
+          <th style="padding: 12px;">Status</th>
+        </tr>
+      </thead>
+
+      <tbody id="applicationTableBody">
+        <tr>
+          <td colspan="6" style="padding: 20px; text-align: center;">
+            Loading applications...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p id="applicationMessage" style="margin-top: 15px;"></p>
+</section>
 
         <section id="students" class="section">
           <h2>Student Management</h2>

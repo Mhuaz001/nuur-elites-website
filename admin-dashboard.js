@@ -17,63 +17,66 @@ const accessMessage = document.getElementById('accessMessage');
 const dashboard = document.getElementById('dashboard');
 const logoutButton = document.getElementById('logoutButton');
 
-// LOAD STUDENT APPLICATIONS
+const tableBody = document.getElementById('applicationTableBody');
+const applicationMessage = document.getElementById('applicationMessage');
+
+// LOAD APPLICATIONS
 async function loadApplications() {
-  const tableBody = document.getElementById('applicationTableBody');
-  const message = document.getElementById('applicationMessage');
-  const applicationCount = document.getElementById('applicationCount');
 
-  tableBody.innerHTML = '';
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="7" style="padding:20px;text-align:center;">
+        Loading applications...
+      </td>
+    </tr>
+  `;
 
-  message.textContent = 'Loading applications...';
-  message.style.color = '#155b37';
+  applicationMessage.textContent = 'Loading applications...';
+  applicationMessage.style.color = '#155b37';
 
   const { data: applications, error } = await supabase
     .from('student_applications')
-    .select(`
-      student_name,
-      guardian_name,
-      guardian_phone,
-      course_interest,
-      delivery_mode,
-      status
-    `)
-    .order('student_name', { ascending: true });
+    .select('*')
+    .order('submitted_at', { ascending: false });
 
   if (error) {
     console.error('Applications loading error:', error);
 
     tableBody.innerHTML = `
       <tr>
-        <td colspan="6" style="padding:20px;text-align:center;">
+        <td colspan="7" style="padding:20px;text-align:center;">
           Unable to load applications.
         </td>
       </tr>
     `;
 
-    message.textContent =
-      'Unable to load applications. Please check your database permissions.';
-    message.style.color = 'red';
+    applicationMessage.textContent =
+      'Unable to load applications. Check database permissions.';
 
+    applicationMessage.style.color = 'red';
     return;
   }
 
-  applicationCount.textContent = applications.length;
+  document.getElementById('applicationCount').textContent =
+    applications.length;
+
+  tableBody.innerHTML = '';
 
   if (applications.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="6" style="padding:20px;text-align:center;">
-          No applications have been submitted yet.
+        <td colspan="7" style="padding:20px;text-align:center;">
+          No applications submitted yet.
         </td>
       </tr>
     `;
 
-    message.textContent = 'No applications available.';
+    applicationMessage.textContent = 'No applications available.';
     return;
   }
 
   applications.forEach(application => {
+
     const row = document.createElement('tr');
 
     const values = [
@@ -86,29 +89,159 @@ async function loadApplications() {
     ];
 
     values.forEach(value => {
+
       const cell = document.createElement('td');
 
       cell.textContent = value || '—';
-      cell.style.padding = '12px';
-      cell.style.borderBottom = '1px solid #ddd';
-      cell.style.fontSize = '13px';
 
       row.appendChild(cell);
+
     });
 
+    // ACTIONS CELL
+    const actionCell = document.createElement('td');
+
+    if (application.status === 'pending') {
+
+      const approveButton = document.createElement('button');
+
+      approveButton.textContent = 'Approve';
+      approveButton.className = 'action-button approve-button';
+      approveButton.dataset.action = 'approve';
+      approveButton.dataset.id = application.id;
+
+      const rejectButton = document.createElement('button');
+
+      rejectButton.textContent = 'Reject';
+      rejectButton.className = 'action-button reject-button';
+      rejectButton.dataset.action = 'reject';
+      rejectButton.dataset.id = application.id;
+
+      actionCell.appendChild(approveButton);
+      actionCell.appendChild(rejectButton);
+
+    } else {
+
+      actionCell.textContent = 'No action required';
+
+    }
+
+    row.appendChild(actionCell);
+
     tableBody.appendChild(row);
+
   });
 
-  message.textContent =
+  applicationMessage.textContent =
     `${applications.length} application(s) loaded successfully.`;
 
-  message.style.color = 'green';
+  applicationMessage.style.color = 'green';
+
+  await loadStudentCount();
 }
+
+// LOAD STUDENT COUNT
+async function loadStudentCount() {
+
+  const { count, error } = await supabase
+    .from('students')
+    .select('id', { count: 'exact', head: true });
+
+  if (error) {
+    console.error('Student count error:', error);
+    return;
+  }
+
+  document.getElementById('studentCount').textContent = count;
+}
+
+// APPROVE OR REJECT APPLICATION
+tableBody.addEventListener('click', async (event) => {
+
+  const button = event.target.closest('button[data-action]');
+
+  if (!button) return;
+
+  const applicationId = button.dataset.id;
+  const action = button.dataset.action;
+
+  if (!applicationId) return;
+
+  const confirmed = confirm(
+    action === 'approve'
+      ? 'Are you sure you want to approve this application and register the student?'
+      : 'Are you sure you want to reject this application?'
+  );
+
+  if (!confirmed) return;
+
+  button.disabled = true;
+
+  applicationMessage.textContent =
+    action === 'approve'
+      ? 'Approving application and creating student record...'
+      : 'Rejecting application...';
+
+  applicationMessage.style.color = '#155b37';
+
+  let result;
+
+  try {
+
+    if (action === 'approve') {
+
+      result = await supabase.rpc(
+        'approve_student_application',
+        {
+          application_id: applicationId
+        }
+      );
+
+    } else if (action === 'reject') {
+
+      result = await supabase.rpc(
+        'reject_student_application',
+        {
+          application_id: applicationId
+        }
+      );
+
+    }
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    applicationMessage.textContent =
+      action === 'approve'
+        ? 'Application approved. Student record created successfully.'
+        : 'Application rejected successfully.';
+
+    applicationMessage.style.color = 'green';
+
+    // REFRESH APPLICATIONS AND STUDENT COUNT
+    await loadApplications();
+
+  } catch (error) {
+
+    console.error('Application action error:', error);
+
+    applicationMessage.textContent =
+      error.message || 'Unable to process this application.';
+
+    applicationMessage.style.color = 'red';
+
+    button.disabled = false;
+
+  }
+
+});
 
 // VERIFY ADMINISTRATOR ACCESS
 async function verifyAdminAccess() {
+
   try {
-    // Check signed-in session.
+
     const { data: sessionData, error: sessionError } =
       await supabase.auth.getSession();
 
@@ -121,7 +254,6 @@ async function verifyAdminAccess() {
       return;
     }
 
-    // Verify user identity.
     const { data: userData, error: userError } =
       await supabase.auth.getUser();
 
@@ -132,7 +264,7 @@ async function verifyAdminAccess() {
       return;
     }
 
-    // Check administrator role.
+    // CHECK ADMIN ROLE
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
@@ -142,19 +274,23 @@ async function verifyAdminAccess() {
     if (profileError) throw profileError;
 
     if (profile.role !== 'admin') {
+
       await supabase.auth.signOut();
+
       window.location.replace('admin.html');
       return;
+
     }
 
-    // Display dashboard after successful verification.
+    // DISPLAY DASHBOARD
     accessMessage.hidden = true;
     dashboard.hidden = false;
 
-    // Load real student applications.
+    // LOAD DASHBOARD DATA
     await loadApplications();
 
   } catch (error) {
+
     console.error('Dashboard access error:', error);
 
     accessMessage.textContent =
@@ -163,7 +299,9 @@ async function verifyAdminAccess() {
     await supabase.auth.signOut();
 
     window.location.replace('admin.html');
+
   }
+
 }
 
 // SIDEBAR NAVIGATION
@@ -171,7 +309,9 @@ const navigationButtons = document.querySelectorAll('.nav-button');
 const sections = document.querySelectorAll('.section');
 
 navigationButtons.forEach(button => {
+
   button.addEventListener('click', () => {
+
     const selectedSection = button.dataset.section;
 
     navigationButtons.forEach(item => {
@@ -185,15 +325,19 @@ navigationButtons.forEach(button => {
     button.classList.add('active');
 
     document.getElementById(selectedSection).classList.add('active');
+
   });
+
 });
 
 // ADMINISTRATOR SIGN OUT
 logoutButton.addEventListener('click', async () => {
+
   logoutButton.disabled = true;
   logoutButton.textContent = 'Signing out...';
 
   try {
+
     const { error } = await supabase.auth.signOut();
 
     if (error) throw error;
@@ -201,13 +345,16 @@ logoutButton.addEventListener('click', async () => {
     window.location.replace('admin.html');
 
   } catch (error) {
+
     console.error('Sign out error:', error);
 
     alert('Unable to sign out. Please try again.');
 
     logoutButton.disabled = false;
     logoutButton.textContent = 'Sign Out';
+
   }
+
 });
 
 // START DASHBOARD

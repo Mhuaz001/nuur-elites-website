@@ -173,6 +173,60 @@
       color: #155b37;
     }
 
+    /* APPLICATION TABLE */
+
+    .application-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 950px;
+    }
+
+    .application-table th {
+      background: #155b37;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .application-table td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .application-table tr:hover {
+      background: #f7faf7;
+    }
+
+    /* ACTION BUTTONS */
+
+    .action-button {
+      border: none;
+      padding: 8px 11px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      margin: 2px;
+    }
+
+    .approve-button {
+      background: #155b37;
+      color: white;
+    }
+
+    .reject-button {
+      background: #b83232;
+      color: white;
+    }
+
+    .action-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     @media (max-width: 700px) {
       .layout {
         flex-direction: column;
@@ -262,6 +316,8 @@
           <p>Manage Nuur Elites Learning and Consultancy from one place.</p>
         </div>
 
+        <!-- DASHBOARD OVERVIEW -->
+
         <section id="overview" class="section active">
           <h2>Dashboard Overview</h2>
           <p>Your management centre is ready. Select a section from the menu.</p>
@@ -291,55 +347,80 @@
           </div>
         </section>
 
+        <!-- STUDENT APPLICATIONS -->
+
         <section id="applications" class="section">
-  <h2>Student Applications</h2>
-  <p>Review applications submitted through the Nuur Elites website.</p>
 
-  <div style="overflow-x: auto; margin-top: 20px;">
-    <table style="width: 100%; border-collapse: collapse; min-width: 750px;">
-      <thead>
-        <tr style="background: #155b37; color: white;">
-          <th style="padding: 12px;">Student</th>
-          <th style="padding: 12px;">Guardian</th>
-          <th style="padding: 12px;">Phone</th>
-          <th style="padding: 12px;">Programme(s)</th>
-          <th style="padding: 12px;">Learning Mode</th>
-          <th style="padding: 12px;">Status</th>
-        </tr>
-      </thead>
+          <h2>Student Applications</h2>
 
-      <tbody id="applicationTableBody">
-        <tr>
-          <td colspan="6" style="padding: 20px; text-align: center;">
-            Loading applications...
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+          <p>
+            Review applications submitted through the Nuur Elites website.
+            Approve or reject applications from this section.
+          </p>
 
-  <p id="applicationMessage" style="margin-top: 15px;"></p>
-</section>
+          <div style="overflow-x: auto; margin-top: 20px;">
+
+            <table class="application-table">
+
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Guardian</th>
+                  <th>Phone</th>
+                  <th>Programme(s)</th>
+                  <th>Learning Mode</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody id="applicationTableBody">
+
+                <tr>
+                  <td colspan="7" style="padding: 20px; text-align: center;">
+                    Loading applications...
+                  </td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <p id="applicationMessage" style="margin-top: 15px;"></p>
+
+        </section>
+
+        <!-- STUDENTS -->
 
         <section id="students" class="section">
           <h2>Student Management</h2>
           <p>Manage student profiles, learning programmes and enrolment records.</p>
         </section>
 
+        <!-- COURSES -->
+
         <section id="courses" class="section">
           <h2>Course Management</h2>
           <p>Add, update and manage the programmes offered by Nuur Elites.</p>
         </section>
+
+        <!-- TEACHERS -->
 
         <section id="teachers" class="section">
           <h2>Teacher Management</h2>
           <p>Manage tutors, teacher profiles and teaching assignments.</p>
         </section>
 
+        <!-- LESSONS -->
+
         <section id="lessons" class="section">
           <h2>Lessons & Attendance</h2>
           <p>Manage lesson schedules, class records and attendance.</p>
         </section>
+
+        <!-- PAYMENTS -->
 
         <section id="payments" class="section">
           <h2>Payments & Fees</h2>

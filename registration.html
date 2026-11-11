@@ -72,6 +72,66 @@
       resize: vertical;
     }
 
+    /* Multiple course selection */
+
+    fieldset.course-group {
+      border: none;
+      padding: 0;
+      margin: 17px 0 0;
+      min-width: 0;
+    }
+
+    fieldset.course-group legend {
+      font-weight: bold;
+      padding: 0;
+      margin-bottom: 4px;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #777;
+      margin: 0 0 10px;
+    }
+
+    .course-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .course-options label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: normal;
+      margin: 0;
+      padding: 11px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .course-options label:hover {
+      border-color: #155b37;
+    }
+
+    .course-options label:has(input:checked) {
+      border-color: #155b37;
+      background: #eaf4ee;
+      font-weight: bold;
+    }
+
+    .course-options input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      margin: 0;
+      flex-shrink: 0;
+      accent-color: #155b37;
+      cursor: pointer;
+    }
+
     button {
       width: 100%;
       margin-top: 25px;
@@ -112,6 +172,10 @@
       .container {
         padding: 20px;
       }
+
+      .course-options {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -133,21 +197,22 @@
       <h2>1. Student Information</h2>
 
       <label for="studentName">Student's Full Name *</label>
-      <input type="text" id="studentName" required>
+      <input type="text" id="studentName" name="studentName" required>
 
       <label for="dob">Date of Birth</label>
-      <input type="date" id="dob">
+      <input type="date" id="dob" name="dob">
 
       <label for="location">Residential Location *</label>
-      <input type="text" id="location" placeholder="City and country" required>
+      <input type="text" id="location" name="location"
+        placeholder="City and country" required>
 
       <h2>2. Parent / Guardian Information</h2>
 
       <label for="guardianName">Parent or Guardian's Full Name *</label>
-      <input type="text" id="guardianName" required>
+      <input type="text" id="guardianName" name="guardianName" required>
 
       <label for="relationship">Relationship to Student *</label>
-      <select id="relationship" required>
+      <select id="relationship" name="relationship" required>
         <option value="">Select relationship</option>
         <option value="Father">Father</option>
         <option value="Mother">Mother</option>
@@ -157,38 +222,86 @@
       </select>
 
       <label for="guardianPhone">Phone / WhatsApp Number *</label>
-      <input type="tel" id="guardianPhone" required>
+      <input type="tel" id="guardianPhone" name="guardianPhone" required>
 
       <label for="guardianEmail">Email Address</label>
-      <input type="email" id="guardianEmail">
+      <input type="email" id="guardianEmail" name="guardianEmail">
 
       <h2>3. Programme Selection</h2>
 
-      <label for="courseInterest">Select Your Preferred Course *</label>
-      <select id="courseInterest" required>
-        <option value="">Choose a course</option>
-        <option value="quran-reading">Qur'an Reading</option>
-        <option value="quran-hifz">Qur'an Memorisation (Hifz)</option>
-        <option value="tajweed">Tajweed</option>
-        <option value="arabic-language">Arabic Language</option>
-        <option value="islamic-studies">Islamic Studies</option>
-        <option value="secular-education">Secular Education</option>
-        <option value="french-language">French Language</option>
-      </select>
+      <fieldset class="course-group" id="courseGroup">
+
+        <legend>Select Your Preferred Courses *</legend>
+
+        <p class="hint">
+          You may select more than one course.
+        </p>
+
+        <div class="course-options">
+
+          <label>
+            <input type="checkbox" name="courseInterest"
+              value="quran-reading">
+            Qur'an Reading
+          </label>
+
+          <label>
+            <input type="checkbox" name="courseInterest"
+              value="quran-hifz">
+            Qur'an Memorisation (Hifz)
+          </label>
+
+          <label>
+            <input type="checkbox" name="courseInterest"
+              value="tajweed">
+            Tajweed
+          </label>
+
+          <label>
+            <input type="checkbox" name="courseInterest"
+              value="arabic-language">
+            Arabic Language
+          </label>
+
+          <label>
+            <input type="checkbox" name="courseInterest"
+              value="islamic-studies">
+            Islamic Studies
+          </label>
+
+          <label>
+            <input type="checkbox" name="courseInterest"
+              value="secular-education">
+            Secular Education
+          </label>
+
+          <label>
+            <input type="checkbox" name="courseInterest"
+              value="french-language">
+            French Language
+          </label>
+
+        </div>
+
+      </fieldset>
 
       <label for="deliveryMode">Preferred Learning Mode *</label>
-      <select id="deliveryMode" required>
+
+      <select id="deliveryMode" name="deliveryMode" required>
         <option value="">Select learning mode</option>
         <option value="online">Online Lessons</option>
         <option value="physical">Physical / Home Lessons</option>
       </select>
 
       <label for="preferredSchedule">Preferred Days and Time</label>
+
       <input type="text" id="preferredSchedule"
+        name="preferredSchedule"
         placeholder="e.g. Saturdays and Sundays, 4:00pm">
 
       <label for="notes">Additional Information</label>
-      <textarea id="notes"
+
+      <textarea id="notes" name="notes"
         placeholder="Tell us about the student's learning needs or experience."></textarea>
 
       <button type="submit" id="submitButton">
@@ -207,6 +320,40 @@
     </div>
 
   </main>
+
+  <!-- Validate that at least one course is selected -->
+
+  <script>
+    (function () {
+      var form = document.getElementById('applicationForm');
+
+      var boxes = document.querySelectorAll(
+        'input[name="courseInterest"]'
+      );
+
+      var first = boxes[0];
+
+      function validateCourses() {
+        var anyChecked = Array.from(boxes).some(function (box) {
+          return box.checked;
+        });
+
+        first.setCustomValidity(
+          anyChecked ? '' : 'Please select at least one course.'
+        );
+      }
+
+      boxes.forEach(function (box) {
+        box.addEventListener('change', validateCourses);
+      });
+
+      form.addEventListener('reset', function () {
+        setTimeout(validateCourses, 0);
+      });
+
+      validateCourses();
+    })();
+  </script>
 
   <script type="module" src="registration.js"></script>
 

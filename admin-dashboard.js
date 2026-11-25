@@ -482,6 +482,8 @@ applicationTableBody.addEventListener('click', async event => {
   try {
 
     let error = null;
+    let approvalStatusMessage = null;
+    let approvalStatusColor = 'green';
 
     if (action === 'approve') {
       const result = await supabase.rpc('approve_student_application', {
@@ -491,13 +493,11 @@ applicationTableBody.addEventListener('click', async event => {
       if (!error && result.data?.student_id) {
         try {
           const invitation = await createOrLinkStudentPortal(result.data.student_id);
-          showMessage(applicationMessage,
-            `Application approved. ${invitation.message} Recipient: ${invitation.recipient_email || 'existing account'}.`);
+          approvalStatusMessage = `Application approved. ${invitation.message} Recipient: ${invitation.recipient_email || 'existing account'}.`;
         } catch (inviteError) {
           console.error('Student portal invitation error:', inviteError);
-          showMessage(applicationMessage,
-            `Application approved, but portal setup needs attention: ${inviteError.message}. You can retry from the Students list.`,
-            '#a52b2b');
+          approvalStatusMessage = `Application approved, but portal setup needs attention: ${inviteError.message}. Retry from the Students list.`;
+          approvalStatusColor = '#a52b2b';
         }
       }
     } else {
@@ -524,6 +524,9 @@ applicationTableBody.addEventListener('click', async event => {
     await loadApplications();
     await loadStudents();
     await loadOverviewCounts();
+    if (approvalStatusMessage) {
+      showMessage(applicationMessage, approvalStatusMessage, approvalStatusColor);
+    }
 
   } catch (error) {
 

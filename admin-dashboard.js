@@ -787,8 +787,9 @@ studentTableBody.addEventListener('click', async event => {
     showMessage(studentMessage, 'Creating or linking the secure portal account...');
     try {
       const result = await createOrLinkStudentPortal(student.id);
-      showMessage(studentMessage, `${result.message} Recipient: ${result.recipient_email || 'existing account'}.`);
+      const portalStatus = `${result.message} Recipient: ${result.recipient_email || 'existing account'}.`;
       await loadStudents();
+      showMessage(studentMessage, portalStatus);
     } catch (error) {
       console.error('Portal account setup error:', error);
       showMessage(studentMessage, error.message, 'red');

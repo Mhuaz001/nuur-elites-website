@@ -488,6 +488,18 @@ applicationTableBody.addEventListener('click', async event => {
         application_id: applicationId
       });
       error = result.error;
+      if (!error && result.data?.student_id) {
+        try {
+          const invitation = await createOrLinkStudentPortal(result.data.student_id);
+          showMessage(applicationMessage,
+            `Application approved. ${invitation.message} Recipient: ${invitation.recipient_email || 'existing account'}.`);
+        } catch (inviteError) {
+          console.error('Student portal invitation error:', inviteError);
+          showMessage(applicationMessage,
+            `Application approved, but portal setup needs attention: ${inviteError.message}. You can retry from the Students list.`,
+            '#a52b2b');
+        }
+      }
     } else {
       const result = await supabase
         .from('student_applications')
@@ -550,6 +562,8 @@ async function loadStudents() {
       preferred_schedule,
       additional_notes,
       status,
+      student_email,
+      profile_id,
       created_at
     `)
     .order('created_at', { ascending: false });
@@ -639,6 +653,13 @@ function renderStudents(students) {
 
     actionCell.appendChild(viewButton);
 
+    const loginButton = document.createElement('button');
+    loginButton.className = 'action-button approve-button';
+    loginButton.textContent = student.profile_id ? 'Link / Check Portal' : 'Create Portal Login';
+    loginButton.dataset.action = 'send-login';
+    loginButton.dataset.id = student.id;
+    actionCell.appendChild(loginButton);
+
     row.appendChild(actionCell);
     studentTableBody.appendChild(row);
 
@@ -708,20 +729,65 @@ function openStudentProfile(student) {
   studentProfileModal.style.display = 'block';
 }
 
-studentTableBody.addEventListener('click', event => {
+async function createOrLinkStudentPortal(studentId) {
+  const invoke = () => supabase.functions.invoke('provision-student-login', {
+    body: { student_id: studentId }
+  });
+
+  let { data, error } = await invoke();
+  if (error) {
+    let details = {};
+    try {
+      if (error.context && typeof error.context.json === 'function') {
+        details = await error.context.json();
+      }
+    } catch (_) {}
+    if (details.needs_email) {
+      const label = details.account_role === 'parent' ? 'parent/guardian email address' : 'adult student email address';
+      const enteredEmail = prompt(`Enter the ${label}:`);
+      if (!enteredEmail || !enteredEmail.trim()) throw new Error('No email address was entered. The student record was not changed.');
+      const column = details.account_role === 'parent' ? 'guardian_email' : 'student_email';
+      const { error: updateError } = await supabase.from('students')
+        .update({ [column]: enteredEmail.trim() }).eq('id', studentId);
+      if (updateError) throw updateError;
+      ({ data, error } = await invoke());
+      if (error) {
+        let retryDetails = {};
+        try { if (error.context?.json) retryDetails = await error.context.json(); } catch (_) {}
+        throw new Error(retryDetails.error || error.message || 'Portal invitation failed.');
+      }
+    } else {
+      throw new Error(details.error || error.message || 'Portal invitation failed.');
+    }
+  }
+  if (!data?.success) throw new Error(data?.error || 'Portal account setup was not confirmed.');
+  return data;
+}
+
+studentTableBody.addEventListener('click', async event => {
 
   const button = event.target.closest('button[data-action]');
-
   if (!button) return;
 
+  const student = allStudents.find(item => item.id === button.dataset.id);
+  if (!student) return;
+
   if (button.dataset.action === 'view-student') {
+    openStudentProfile(student);
+    return;
+  }
 
-    const student = allStudents.find(
-      item => item.id === button.dataset.id
-    );
-
-    if (student) {
-      openStudentProfile(student);
+  if (button.dataset.action === 'send-login') {
+    button.disabled = true;
+    showMessage(studentMessage, 'Creating or linking the secure portal account...');
+    try {
+      const result = await createOrLinkStudentPortal(student.id);
+      showMessage(studentMessage, `${result.message} Recipient: ${result.recipient_email || 'existing account'}.`);
+      await loadStudents();
+    } catch (error) {
+      console.error('Portal account setup error:', error);
+      showMessage(studentMessage, error.message, 'red');
+      button.disabled = false;
     }
   }
 });

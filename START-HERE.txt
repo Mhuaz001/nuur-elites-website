@@ -1,18 +1,18 @@
-NUUR ELITES — DEPLOYMENT CANDIDATE
+NUUR ELITES — DEPLOYMENT CANDIDATE (REVIEW BRANCH)
 
-Before proceeding, read FINAL-AUDIT-AND-REMAINING-WORK.md for the 21 November 2026 review findings.
+Current status: the website source is in GitHub branch manual-bank-transfer-nov-2026. A draft pull request is open against main. Do not merge until the review and role-based tests are complete.
 
-1. Keep a backup of your current website folder and Supabase database.
-2. Extract this ZIP into a new folder and open it in VS Code.
-3. Read README-SETUP.md fully before making database changes.
-4. Do NOT run any old migration from an earlier package. The only migration in this package is sql/production-alignment-migration.sql.
-5. Review the migration and apply it in Supabase SQL Editor only after backup.
-6. Run the website locally with VS Code Live Server, starting at index.html.
-7. Test the registration form and admin dashboard.
-8. Create and link separate test student, parent and teacher accounts as described in README-SETUP.md.
-9. Test enrolments, lesson schedules, attendance, assessments, materials, assignments and assignment grading.
-10. Configure Supabase Auth redirect URLs for your final website domain.
-11. Configure and deploy Paystack functions using test credentials first. Never place secrets in browser code.
-12. Complete every item in the production checklist before announcing the website as live.
+1. Keep a backup of the website folder and Supabase database before further changes.
+2. Read README-SETUP.md and SECURITY-REVIEW.md.
+3. The additive LMS alignment migration is already recorded as applied in the connected Supabase project on 25 November 2026. Do NOT run it again against that project.
+4. The migration source is retained at supabase/migrations/20261125180031_nuur_elites_lms_alignment.sql for audit/reference.
+5. The live manual bank-transfer instruction row is configured but inactive. Do NOT activate it until explicitly authorised by Nuur Elites.
+6. Open the site locally through a web server (for example, VS Code Live Server), starting at index.html.
+7. Test registration, admin dashboard and separate student, parent and teacher accounts.
+8. Test enrolments, schedules, attendance, assessments, materials, assignments, submissions and grading.
+9. Verify Supabase Auth Site URL and Redirect URLs against the final hosting domain.
+10. Complete every item in the production checklist before merging or announcing the platform as operational.
 
-This package has had static JavaScript syntax checks and local HTML path/ID checks. It has NOT been connected to your live Supabase database or tested with your real Auth accounts, Paystack merchant account or final hosting domain. Those steps are required before production launch.
+Verified so far: source files are committed to this review branch; the connected Supabase project is active; the LMS resource tables and relevant payment/privacy columns exist; the manual bank-transfer instruction record is inactive.
+
+Not yet verified: complete authenticated browser journeys for each role, real payment submission/review, final hosting-domain redirects, and production release. Static code checks are not a substitute for these tests.

@@ -8,11 +8,11 @@ Current status: the website source is in GitHub branch manual-bank-transfer-nov-
 4. The migration source is retained at supabase/migrations/20261125180031_nuur_elites_lms_alignment.sql for audit/reference.
 5. The live manual bank-transfer instruction row is configured but inactive. Do NOT activate it until explicitly authorised by Nuur Elites.
 6. Open the site locally through a web server (for example, VS Code Live Server), starting at index.html.
-7. Test registration, admin dashboard and separate student, parent and teacher accounts.
+7. Registration now collects the adult learner email and guardian email. On approval, the admin dashboard invokes the protected provision-student-login Edge Function to create/link an adult student account or a parent account for minors.
 8. Test enrolments, schedules, attendance, assessments, materials, assignments, submissions and grading.
-9. Verify Supabase Auth Site URL and Redirect URLs against the final hosting domain.
+9. Configure custom SMTP for Supabase Auth email delivery and allow https://nuurelites.netlify.app/reset-password.html in Authentication → URL Configuration. Default SMTP cannot send to ordinary family email addresses.
 10. Complete every item in the production checklist before merging or announcing the platform as operational.
 
-Verified so far: source files are committed to this review branch; the connected Supabase project is active; the LMS resource tables and relevant payment/privacy columns exist; the manual bank-transfer instruction record is inactive.
+Verified so far: student_email columns and approval RPC are applied; the provision-student-login Edge Function is active with JWT verification; source files are committed to this review branch; the connected Supabase project is active; the LMS resource tables and relevant payment/privacy columns exist; the manual bank-transfer instruction record is inactive.
 
 Not yet verified: complete authenticated browser journeys for each role, real payment submission/review, final hosting-domain redirects, and production release. Static code checks are not a substitute for these tests.

@@ -2,7 +2,7 @@
 
 This is the corrected static website and portal package for the existing Nuur Elites Supabase project.
 
-**Important:** the files have been aligned to the database schema confirmed during the project work. This package is not live merely because it has been built. The database migration must be reviewed and applied, portal accounts must be linked, Edge Functions and provider credentials must be configured, and end-to-end tests must pass before public launch.
+**Important:** this review branch contains the current website and portal source. The additive LMS alignment migration is already recorded as applied in the connected Supabase project on 25 November 2026. Do not rerun it against that project. Portal accounts still need to be linked and end-to-end role tests completed before public launch.
 
 ## 1. Package contents
 
@@ -14,9 +14,9 @@ This is the corrected static website and portal package for the existing Nuur El
 - `admin-dashboard.html`, `admin-dashboard.js` — admin management dashboard, including applications, students, courses, teachers, lesson schedules, enrolments and payments.
 - `portal.html`, `portal.js` — shared role-based student, parent and teacher portal.
 - `reset-password.html` — Supabase password recovery page.
-- `payment-callback.html` — Paystack return information page; the signed webhook, not this page, confirms payment.
-- `sql/production-alignment-migration.sql` — additive migration for the existing schema.
-- `supabase/functions/` — Paystack initialisation/webhook, email and WhatsApp server functions.
+- `payment-callback.html` and the Paystack Edge Function sources — retained legacy files; they are not used by the current manual bank-transfer portal flow.
+- `supabase/migrations/20261125180031_nuur_elites_lms_alignment.sql` — additive LMS alignment migration, already applied to the connected Supabase project on 25 November 2026.
+- `supabase/functions/` — legacy Paystack plus optional email and WhatsApp server functions; do not deploy/configure Paystack for the current payment approach.
 - `images/` — existing Nuur Elites artwork and the supplied official logo.
 
 This is a plain HTML/CSS/JavaScript site. It does not require `npm install` or a build command. Serve the folder from a local web server while testing; do not open the pages as `file://` URLs.
@@ -31,15 +31,9 @@ The existing database uses these tables and relationships:
 
 The portal now uses `teachers.profile_id`, the parent-to-child relationship in `parents` and `student_guardians`, and the existing `enrollments` and `lesson_schedules` tables. It does **not** use `teachers.auth_user_id`, `lessons`, or a duplicate `student_enrollments` table.
 
-### Apply the migration
+### Migration status
 
-1. Back up the Supabase database first.
-2. Open Supabase Dashboard → SQL Editor.
-3. Open `sql/production-alignment-migration.sql`.
-4. Review the script and confirm that the existing helper functions it uses are present: `is_admin()`, `current_teacher_id()` and `can_access_student(uuid)`.
-5. Run the migration once.
-6. If any SQL error occurs, stop and share the complete error. Do not try the old migration or repeatedly rerun partial SQL.
-7. Verify that `course_materials`, `assignments` and `assignment_submissions` exist, and that RLS is enabled on all three.
+The additive migration `supabase/migrations/20261125180031_nuur_elites_lms_alignment.sql` is already recorded as applied in the connected Supabase project on 25 November 2026. The live project has the `course_materials`, `assignments` and `assignment_submissions` tables and the related privacy/payment columns. Do not run this migration again on that project. Keep the SQL file in GitHub as the audit/source record. If setting up a different Supabase project, review the migration and its dependencies first, take a backup, and apply it only once to that separate project.
 
 The migration adds these LMS resource tables, payment metadata and application privacy-consent fields only. It does not drop existing tables, replace the established LMS access policies, create a second enrolment model, or delete existing records. It does tighten the existing public application-insert policy so new applications must include privacy consent.
 
@@ -68,7 +62,7 @@ The public homepage's tutor-request and contact forms open a prepared WhatsApp o
 7. In **Lesson Schedules**, add a schedule using that enrolment UUID, weekday, start time, duration, timezone and optional HTTPS meeting link.
 8. Teachers can then sign in to publish learning materials and assignments, mark attendance and record assessments.
 
-The enrolment fee is the amount used by the online Paystack flow. Check it carefully before enabling payments.
+The enrolment fee is the amount used by the current manual bank-transfer flow. Confirm the agreed fee and currency in the enrolment record before requesting payment.
 
 ## 5. Create and link portal accounts
 
@@ -148,41 +142,15 @@ where id = 'TEACHER-RECORD-UUID';
 
 Never put passwords, service-role keys, Paystack secrets or WhatsApp access tokens in SQL, browser JavaScript, GitHub or this README.
 
-## 6. Paystack setup
+## 6. Current payment method — manual bank transfer
 
-The payment flow now takes the amount from the selected active enrolment's `tuition_fee` and `currency`. The payer cannot type an arbitrary amount into the portal. The webhook validates Paystack's signature and checks the stored transaction amount/currency before marking it paid.
+The selected payment method is bank transfer with manual administrator verification. Paystack is not the active payment route. The older Paystack callback page and Edge Function source remain in the repository for reference only; do not configure or deploy them for this release.
 
-1. Create/configure your Paystack merchant account.
-2. Install the Supabase CLI and sign in.
-3. From this project folder, link the Supabase project:
+The portal reads the singleton `payment_instructions` row only when `is_active = true`. It displays the bank details and derives the amount from the learner's active NGN enrolment. The learner/parent supplies the transfer sender name and bank reference, with an optional HTTPS receipt link. The submission is stored as `pending`; the portal never marks it paid automatically.
 
-```bash
-supabase login
-supabase link --project-ref lrcnworfhrrntdltzgpe
-```
+An administrator must independently confirm that funds have arrived in the bank account before marking a submission paid. A rejected transfer is stored with status `failed`, with review time, reviewer and note recorded. The bank-instruction row is currently configured but inactive. Keep it inactive until Nuur Elites explicitly authorises activation.
 
-4. Set the Paystack secrets locally in your terminal (do not share them):
-
-```bash
-supabase secrets set PAYSTACK_SECRET_KEY=YOUR_PAYSTACK_SECRET_KEY
-supabase secrets set PAYSTACK_CALLBACK_URL=https://YOUR-PUBLISHED-DOMAIN/payment-callback.html
-```
-
-5. Deploy the two payment functions:
-
-```bash
-supabase functions deploy paystack-initialize
-supabase functions deploy paystack-webhook
-```
-
-6. Set the Paystack webhook URL to:
-
-`https://lrcnworfhrrntdltzgpe.supabase.co/functions/v1/paystack-webhook`
-
-7. Test using Paystack test credentials first. Confirm that a successful test transaction updates the correct `payments` row to `paid`.
-8. Only enable live credentials after test payments and reconciliation have been verified.
-
-Paystack is not ready until your merchant credentials and published callback URL are configured. A browser redirect is not proof of payment; the webhook is authoritative.
+Receipt proof currently uses an optional HTTPS link, not a private file upload. Do not request sensitive documents through public links. A private Supabase Storage bucket with ownership and access policies is a separate improvement required before introducing mandatory receipt uploads.
 
 ## 7. Email and WhatsApp functions
 
@@ -221,7 +189,7 @@ The admin and learning portal password reset buttons send recovery links to `res
 ## 9. Production checklist
 
 - [ ] Database backup completed.
-- [ ] `production-alignment-migration.sql` reviewed and successfully applied.
+- [x] LMS alignment migration recorded as applied to the connected Supabase project on 25 November 2026 (do not rerun).
 - [ ] New LMS tables have RLS enabled and policies verified.
 - [ ] Public registration creates a pending application.
 - [ ] Admin can approve and reject applications.
@@ -232,7 +200,7 @@ The admin and learning portal password reset buttons send recovery links to `res
 - [ ] Student/parent can see attendance, assessments, materials, assignments and payment history.
 - [ ] Student can submit assignment work; assigned teacher can grade it.
 - [ ] Password reset works on the published domain.
-- [ ] Paystack test payment is confirmed by the signed webhook.
+- [ ] Manual bank-transfer submission remains pending until administrator verification; test this with dedicated accounts before activation.
 - [ ] Mobile layout, navigation, logo and all image paths have been checked.
 - [ ] Supabase Auth Site URL and Redirect URLs match the final domain.
 - [ ] No secret keys or tokens are present in public files or repository history.
@@ -255,7 +223,7 @@ After publishing:
 
 1. Open the final domain and test the homepage, registration, privacy notice, admin login, portal login and password reset.
 2. Update Supabase Auth Site URL and Redirect URLs to that exact domain.
-3. Update `PAYSTACK_CALLBACK_URL` to the final domain, then redeploy `paystack-initialize` if you enabled Paystack.
+3. Confirm the manual bank-transfer option remains inactive until explicitly authorised. Paystack callback configuration is not part of this release.
 4. Test all pages on a phone and desktop.
 
 Supabase database and Edge Functions remain hosted in Supabase; publishing the static files does not deploy those backend components.
@@ -268,4 +236,8 @@ Administrators can edit the bank instructions in **Admin Dashboard → Payments*
 
 Receipt proof is currently submitted as an optional HTTPS link, not uploaded into Supabase Storage. Do not ask learners to use a publicly accessible link for sensitive documents. A private receipt-upload bucket with ownership policies should be implemented before making mandatory file uploads available.
 
-The older Paystack Edge Function source and callback page remain in this package as legacy files, but the portal no longer invokes Paystack. They are not part of the manual bank-transfer flow. Do not configure or activate Paystack unless the payment method is deliberately changed later.
+
+
+## 12. Current deployment review status
+
+The connected Supabase project was checked on 25 November 2026. The project is active, the LMS resource tables and related columns exist, and the bank-transfer instructions are configured but inactive. This does not prove the complete website has passed authenticated end-to-end testing. See `SECURITY-REVIEW.md` for current advisor findings and remaining security work. Do not merge or announce production readiness until role-based tests and the production checklist are complete.

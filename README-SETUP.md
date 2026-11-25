@@ -228,16 +228,6 @@ After publishing:
 
 Supabase database and Edge Functions remain hosted in Supabase; publishing the static files does not deploy those backend components.
 
-## Manual bank-transfer payment flow (current portal implementation)
-
-The learner/parent portal now supports manual bank-transfer submissions. It reads the singleton `payment_instructions` row only when `is_active = true`, displays the configured account details, and lets an authenticated learner/parent submit the enrolment amount, sender name, bank reference and an optional HTTPS receipt link. New submissions are inserted as `pending`; the portal does not mark a transfer as paid.
-
-Administrators can edit the bank instructions in **Admin Dashboard → Payments**. Keep **Make bank transfer available to learners** unticked until Nuur Elites explicitly decides to start accepting transfers. The admin payment list offers a review action for pending bank transfers. Before selecting **PAID**, the administrator must independently confirm the funds have arrived in the bank account. **REJECTED** is stored as `failed`; review time, reviewer and note are recorded.
-
-Receipt proof is currently submitted as an optional HTTPS link, not uploaded into Supabase Storage. Do not ask learners to use a publicly accessible link for sensitive documents. A private receipt-upload bucket with ownership policies should be implemented before making mandatory file uploads available.
-
-
-
 ## 12. Current deployment review status
 
 The connected Supabase project was checked on 25 November 2026. The project is active, the LMS resource tables and related columns exist, and the bank-transfer instructions are configured but inactive. This does not prove the complete website has passed authenticated end-to-end testing. See `SECURITY-REVIEW.md` for current advisor findings and remaining security work. Do not merge or announce production readiness until role-based tests and the production checklist are complete.

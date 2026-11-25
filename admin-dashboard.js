@@ -420,6 +420,7 @@ function viewApplication(application) {
     ['Student', application.student_name],
     ['Date of Birth', application.date_of_birth],
     ['Guardian', application.guardian_name],
+    ['Student Email', application.student_email],
     ['Guardian Email', application.guardian_email],
     ['Guardian Phone', application.guardian_phone],
     ['Relationship', application.relationship],
@@ -684,6 +685,7 @@ studentSearch.addEventListener('input', event => {
       student.guardian_name,
       student.guardian_phone,
       student.guardian_email,
+      student.student_email,
       student.course_interest
     ].join(' ').toLowerCase();
 

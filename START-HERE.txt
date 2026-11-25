@@ -1,0 +1,18 @@
+NUUR ELITES — DEPLOYMENT CANDIDATE
+
+Before proceeding, read FINAL-AUDIT-AND-REMAINING-WORK.md for the 21 November 2026 review findings.
+
+1. Keep a backup of your current website folder and Supabase database.
+2. Extract this ZIP into a new folder and open it in VS Code.
+3. Read README-SETUP.md fully before making database changes.
+4. Do NOT run any old migration from an earlier package. The only migration in this package is sql/production-alignment-migration.sql.
+5. Review the migration and apply it in Supabase SQL Editor only after backup.
+6. Run the website locally with VS Code Live Server, starting at index.html.
+7. Test the registration form and admin dashboard.
+8. Create and link separate test student, parent and teacher accounts as described in README-SETUP.md.
+9. Test enrolments, lesson schedules, attendance, assessments, materials, assignments and assignment grading.
+10. Configure Supabase Auth redirect URLs for your final website domain.
+11. Configure and deploy Paystack functions using test credentials first. Never place secrets in browser code.
+12. Complete every item in the production checklist before announcing the website as live.
+
+This package has had static JavaScript syntax checks and local HTML path/ID checks. It has NOT been connected to your live Supabase database or tested with your real Auth accounts, Paystack merchant account or final hosting domain. Those steps are required before production launch.

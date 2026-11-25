@@ -1,7 +1,10 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Supabase connection
+// ==========================================
+// NUUR ELITES - ADMINISTRATOR AUTHENTICATION
+// ==========================================
+
 const SUPABASE_URL = 'https://lrcnworfhrrntdltzgpe.supabase.co';
 
 const SUPABASE_PUBLISHABLE_KEY =
@@ -12,54 +15,199 @@ const supabase = createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
-// Login form elements
+// ==========================================
+// PAGE ELEMENTS
+// ==========================================
+
 const loginForm = document.getElementById('adminLoginForm');
 const loginMessage = document.getElementById('loginMessage');
 const loginButton = document.getElementById('loginButton');
 
-// Administrator login
-loginForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
+const emailInput = document.getElementById('adminEmail');
+const passwordInput = document.getElementById('adminPassword');
 
-  const email = document.getElementById('adminEmail').value.trim();
-  const password = document.getElementById('adminPassword').value;
+// ==========================================
+// DISPLAY MESSAGE
+// ==========================================
 
-  loginButton.disabled = true;
-  loginButton.textContent = 'Signing in...';
+function showLoginMessage(message, color = '#155b37') {
+  if (!loginMessage) return;
 
-  loginMessage.textContent = 'Verifying administrator details...';
-  loginMessage.style.color = '#155b37';
+  loginMessage.textContent = message;
+  loginMessage.style.color = color;
+}
 
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
+// ==========================================
+// VERIFY ADMINISTRATOR ACCOUNT
+// ==========================================
+
+async function verifyAdministrator() {
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error('Please sign in to continue.');
+  }
+
+  const { data: profile, error: profileError } =
+    await supabase
+      .from('profiles')
+      .select('id, full_name, role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+  if (profileError) {
+    throw new Error(
+      'Unable to verify your administrator profile. Please try again.'
+    );
+  }
+
+  if (!profile || String(profile.role).toLowerCase() !== 'admin') {
+    await supabase.auth.signOut();
+
+    throw new Error(
+      'Access denied. This account is not authorised to access the administrator dashboard.'
+    );
+  }
+
+  return { user, profile };
+}
+
+// ==========================================
+// OPEN ADMIN DASHBOARD
+// ==========================================
+
+async function openAdminDashboard() {
+  await verifyAdministrator();
+
+  showLoginMessage(
+    'Administrator verified. Opening dashboard...',
+    'green'
+  );
+
+  window.location.assign('./admin-dashboard.html');
+}
+
+// ==========================================
+// LOGIN FORM
+// ==========================================
+
+const forgotAdminPassword = document.getElementById('forgotAdminPassword');
+if (forgotAdminPassword) {
+  forgotAdminPassword.addEventListener('click', async () => {
+    const email = emailInput?.value.trim();
+    if (!email) { showLoginMessage('Enter your administrator email address first.', 'red'); return; }
+    forgotAdminPassword.disabled = true;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password.html`
+      });
+      if (error) throw error;
+      showLoginMessage('If this email belongs to an administrator account, a password reset link has been sent.');
+    } catch (error) {
+      showLoginMessage(error.message || 'Password reset could not be requested.', 'red');
+    } finally { forgotAdminPassword.disabled = false; }
+  });
+}
+
+if (!loginForm || !loginButton || !emailInput || !passwordInput) {
+  console.error(
+    'Administrator login elements are missing from the HTML page.'
+  );
+  showLoginMessage(
+    'Login page configuration error. Contact the website administrator.',
+    'red'
+  );
+} else {
+
+  loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      showLoginMessage(
+        'Please enter your email address and password.',
+        'red'
+      );
+      return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = 'Signing in...';
+
+    showLoginMessage('Verifying administrator details...');
+
+    try {
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      await openAdminDashboard();
+
+    } catch (error) {
+
+      console.error('Administrator login error:', error);
+
+      showLoginMessage(
+        error.message || 'Login failed. Please try again.',
+        'red'
+      );
+
+      // Clear an authenticated session if verification fails.
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        await supabase.auth.signOut();
+      }
+
+    } finally {
+
+      loginButton.disabled = false;
+      loginButton.textContent = 'Sign In';
+
+    }
+  });
+
+  // ========================================
+  // CHECK EXISTING SESSION
+  // ========================================
+
+  async function checkExistingSession() {
+
+    const {
+      data: { session },
+      error
+    } = await supabase.auth.getSession();
 
     if (error) {
-      throw error;
+      console.error('Session verification error:', error);
+      return;
     }
 
-    if (!data.user) {
-      throw new Error('Administrator account could not be verified.');
+    if (session) {
+      try {
+        await openAdminDashboard();
+      } catch (error) {
+        console.error(error);
+        showLoginMessage(
+          error.message,
+          'red'
+        );
+      }
     }
-
-    loginMessage.textContent = 'Login successful. Opening dashboard...';
-    loginMessage.style.color = 'green';
-
-    // Dashboard page will be created in the next stage
-    window.location.href = 'admin-dashboard.html';
-
-  } catch (error) {
-    console.error('Admin login error:', error);
-
-    loginMessage.textContent =
-      'Login failed. Please check your email and password.';
-
-    loginMessage.style.color = 'red';
-
-  } finally {
-    loginButton.disabled = false;
-    loginButton.textContent = 'Sign In';
   }
-});
+
+  checkExistingSession();
+}

@@ -25,6 +25,7 @@ form.addEventListener('submit', async (event) => {
   const application = {
     student_name: document.getElementById('studentName').value.trim(),
     date_of_birth: document.getElementById('dob').value || null,
+    student_email: document.getElementById('studentEmail').value.trim() || null,
     location: document.getElementById('location').value.trim(),
     guardian_name: document.getElementById('guardianName').value.trim(),
     relationship: document.getElementById('relationship').value,
@@ -41,6 +42,31 @@ form.addEventListener('submit', async (event) => {
   };
 if (!application.course_interest) {
   message.textContent = 'Please select at least one programme.';
+  message.style.color = 'red';
+  submitButton.disabled = false;
+  submitButton.textContent = 'Submit Registration';
+  return;
+}
+
+const ageOnToday = (dob) => {
+  if (!dob) return null;
+  const birth = new Date(`${dob}T00:00:00`);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today.getMonth() < birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+  return age;
+};
+const applicantAge = ageOnToday(application.date_of_birth);
+if (applicantAge !== null && applicantAge >= 18 && !application.student_email) {
+  message.textContent = 'Please provide the adult student’s email address for their portal invitation.';
+  message.style.color = 'red';
+  submitButton.disabled = false;
+  submitButton.textContent = 'Submit Registration';
+  return;
+}
+if ((applicantAge === null || applicantAge < 18) && !application.guardian_email) {
+  message.textContent = 'Please provide the parent or guardian’s email address for the portal invitation.';
   message.style.color = 'red';
   submitButton.disabled = false;
   submitButton.textContent = 'Submit Registration';

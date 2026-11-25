@@ -7,16 +7,17 @@ This is the corrected static website and portal package for the existing Nuur El
 ## 1. Package contents
 
 - `index.html` — public homepage and service information.
-- `registration.html`, `registration.js` — public student application form with privacy acknowledgement.
+- `registration.html`, `registration.js` — public student application form with privacy acknowledgement and age-appropriate login email collection.
 - `privacy.html` — website privacy notice for applicants and portal users.
 - `404.html` — simple not-found page for static hosting.
 - `admin.html`, `admin.js` — administrator sign-in and password reset request.
 - `admin-dashboard.html`, `admin-dashboard.js` — admin management dashboard, including applications, students, courses, teachers, lesson schedules, enrolments and payments.
 - `portal.html`, `portal.js` — shared role-based student, parent and teacher portal.
-- `reset-password.html` — Supabase password recovery page.
+- `reset-password.html` — secure password setup/recovery page for invited students, parents and administrators.
 - `payment-callback.html` and the Paystack Edge Function sources — retained legacy files; they are not used by the current manual bank-transfer portal flow.
 - `supabase/migrations/20261125180031_nuur_elites_lms_alignment.sql` — additive LMS alignment migration, already applied to the connected Supabase project on 25 November 2026.
-- `supabase/functions/` — legacy Paystack plus optional email and WhatsApp server functions; do not deploy/configure Paystack for the current payment approach.
+- `supabase/functions/provision-student-login/index.ts` — protected admin-only function that invites or links the correct student/parent portal account.
+- `supabase/functions/` — legacy Paystack functions are retained but not used by the current manual bank-transfer approach.
 - `images/` — existing Nuur Elites artwork and the supplied official logo.
 
 This is a plain HTML/CSS/JavaScript site. It does not require `npm install` or a build command. Serve the folder from a local web server while testing; do not open the pages as `file://` URLs.
@@ -64,59 +65,27 @@ The public homepage's tutor-request and contact forms open a prepared WhatsApp o
 
 The enrolment fee is the amount used by the current manual bank-transfer flow. Confirm the agreed fee and currency in the enrolment record before requesting payment.
 
-## 5. Create and link portal accounts
+## 5. Automated student and parent portal invitations
 
-Do not create public self-registration for portal roles. Create/invite accounts through Supabase Authentication, then link the Auth user to the appropriate database record. Use the actual UUIDs from your project.
+Portal accounts are provisioned from the Admin Dashboard after a student application is approved. Do not create public self-registration for portal roles.
 
-### Student
+- Under 18, or date of birth not supplied: the parent/guardian email receives the invitation. The function creates a `parent` profile, a `parents` record and an explicit `student_guardians` link.
+- Age 18 or above: the student's own email receives the invitation. The function creates a `student` profile and links it through `students.profile_id`.
+- The recipient opens the secure Supabase invitation email, sets a password on `reset-password.html`, then signs in at `portal.html`.
+- If an email already has a matching portal account, the function links that account rather than creating a duplicate. The user should sign in with their existing password.
+- If the required email is missing, the admin dashboard asks the administrator to add it and retries. A failed invitation can be retried from the Students list.
 
-1. Supabase Dashboard → Authentication → Users → Add user / Invite user.
-2. Copy the Auth user's UUID.
-3. Create or update the profile:
+The `provision-student-login` Edge Function requires a valid JWT and independently checks that the caller's database profile has `role = 'admin'`. The Supabase service-role key is used only inside the Edge Function; never place it in browser code.
 
-```sql
-insert into public.profiles (id, full_name, role)
-values ('AUTH-USER-UUID', 'Student Full Name', 'student')
-on conflict (id) do update
-set full_name = excluded.full_name, role = excluded.role;
-```
+### Required Auth email delivery setup
 
-4. Link the existing student record:
+Before sending invitations to real families, configure custom SMTP in Supabase. Supabase's built-in email service is limited to project-team addresses and has a very low sending limit; it is not suitable for live student onboarding. Configure a provider such as Brevo, Resend, Postmark or Amazon SES under Supabase Dashboard → Authentication → Emails → SMTP Settings.
 
-```sql
-update public.students
-set profile_id = 'AUTH-USER-UUID'
-where id = 'STUDENT-RECORD-UUID';
-```
+Also add these allowed Redirect URLs under Authentication → URL Configuration:
+- `https://nuurelites.netlify.app/reset-password.html`
+- Your Netlify deploy-preview URL pattern (only if you intend to test invitation links from deploy previews).
 
-### Parent
-
-1. Create/invite the parent's Auth user and copy the UUID.
-2. Create/update the profile:
-
-```sql
-insert into public.profiles (id, full_name, role)
-values ('PARENT-AUTH-UUID', 'Parent Full Name', 'parent')
-on conflict (id) do update
-set full_name = excluded.full_name, role = excluded.role;
-```
-
-3. Create the parent record:
-
-```sql
-insert into public.parents (profile_id, full_name, email, phone, relationship)
-values ('PARENT-AUTH-UUID', 'Parent Full Name', 'parent@example.com', '08000000000', 'Mother')
-returning id;
-```
-
-4. Use the returned parent UUID to link the correct child:
-
-```sql
-insert into public.student_guardians (student_id, parent_id, relationship, is_primary)
-values ('STUDENT-RECORD-UUID', 'PARENT-RECORD-UUID', 'Mother', true);
-```
-
-Do not link a parent to a child solely by matching email text. The portal uses this explicit guardian relationship.
+Keep email confirmations enabled. Do not create shared/default passwords or send passwords in plain text.
 
 ### Teacher
 

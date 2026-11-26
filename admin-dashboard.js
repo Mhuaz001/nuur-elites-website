@@ -668,14 +668,16 @@ function renderStudents(students) {
     loginButton.dataset.id = student.id;
     actionCell.appendChild(loginButton);
 
-    if (hasPortalLogin) {
-      const accessButton = document.createElement('button');
-      accessButton.className = 'action-button edit-button';
-      accessButton.textContent = student.status === 'inactive' ? 'Reactivate' : 'Deactivate';
-      accessButton.dataset.action = student.status === 'inactive' ? 'account-reactivate' : 'account-deactivate';
-      accessButton.dataset.id = student.id;
-      actionCell.appendChild(accessButton);
+    const statusButton = document.createElement('button');
+    statusButton.className = student.status === 'inactive'
+      ? 'action-button approve-button'
+      : 'action-button edit-button';
+    statusButton.textContent = student.status === 'inactive' ? 'Reactivate Student' : 'Make Inactive';
+    statusButton.dataset.action = student.status === 'inactive' ? 'student-reactivate' : 'student-deactivate';
+    statusButton.dataset.id = student.id;
+    actionCell.appendChild(statusButton);
 
+    if (hasPortalLogin) {
       const deleteLoginButton = document.createElement('button');
       deleteLoginButton.className = 'action-button delete-button';
       deleteLoginButton.textContent = 'Delete Login';
@@ -683,6 +685,13 @@ function renderStudents(students) {
       deleteLoginButton.dataset.id = student.id;
       actionCell.appendChild(deleteLoginButton);
     }
+
+    const deleteStudentButton = document.createElement('button');
+    deleteStudentButton.className = 'action-button delete-button';
+    deleteStudentButton.textContent = 'Delete Student';
+    deleteStudentButton.dataset.action = 'delete-student';
+    deleteStudentButton.dataset.id = student.id;
+    actionCell.appendChild(deleteStudentButton);
 
     row.appendChild(actionCell);
     studentTableBody.appendChild(row);
@@ -767,6 +776,19 @@ async function managePortalAccount(entityType, recordId, action) {
   return data;
 }
 
+async function manageStudentRecord(action, studentId = null) {
+  const { data, error } = await supabase.functions.invoke('manage-student-records', {
+    body: { action, student_id: studentId }
+  });
+  if (error) {
+    let details = {};
+    try { if (error.context?.json) details = await error.context.json(); } catch (_) {}
+    throw new Error(details.error || error.message || 'Student management action failed.');
+  }
+  if (!data?.success) throw new Error(data?.error || 'Student management action was not confirmed.');
+  return data;
+}
+
 async function createOrLinkStudentPortal(studentId) {
   const invoke = () => supabase.functions.invoke('provision-student-login', {
     body: { student_id: studentId }
@@ -815,6 +837,45 @@ studentTableBody.addEventListener('click', async event => {
     return;
   }
 
+  if (button.dataset.action === 'student-deactivate' ||
+      button.dataset.action === 'student-reactivate') {
+    const action = button.dataset.action === 'student-deactivate' ? 'deactivate' : 'reactivate';
+    const promptText = action === 'deactivate'
+      ? 'Make ' + student.student_name + ' inactive? Their record and learning history will be kept.'
+      : 'Reactivate ' + student.student_name + '?';
+    if (!confirm(promptText)) return;
+    button.disabled = true;
+    showMessage(studentMessage, 'Updating student status...');
+    try {
+      const result = await manageStudentRecord(action, student.id);
+      await loadStudents();
+      await loadOverviewCounts();
+      showMessage(studentMessage, result.message);
+    } catch (error) {
+      showMessage(studentMessage, error.message, 'red');
+      button.disabled = false;
+    }
+    return;
+  }
+
+  if (button.dataset.action === 'delete-student') {
+    const warning = 'Permanently delete the student record for ' + student.student_name +
+      '? This cannot be undone. Any linked portal login must be removed first, and records with attendance, enrolments, assessments or payments will be protected.';
+    if (!confirm(warning)) return;
+    button.disabled = true;
+    showMessage(studentMessage, 'Deleting student record...');
+    try {
+      const result = await manageStudentRecord('delete_student', student.id);
+      await loadStudents();
+      await loadOverviewCounts();
+      showMessage(studentMessage, result.message);
+    } catch (error) {
+      showMessage(studentMessage, error.message, 'red');
+      button.disabled = false;
+    }
+    return;
+  }
+
   if (button.dataset.action === 'account-deactivate' ||
       button.dataset.action === 'account-reactivate' ||
       button.dataset.action === 'account-delete-login') {
@@ -853,6 +914,50 @@ studentTableBody.addEventListener('click', async event => {
       showMessage(studentMessage, error.message, 'red');
       button.disabled = false;
     }
+  }
+});
+
+const refreshStudentsButton = document.getElementById('refreshStudentsButton');
+const clearAllStudentsButton = document.getElementById('clearAllStudentsButton');
+
+refreshStudentsButton?.addEventListener('click', async () => {
+  refreshStudentsButton.disabled = true;
+  try {
+    await loadStudents();
+    await loadOverviewCounts();
+    showMessage(studentMessage, 'Student list refreshed from the database.');
+  } finally {
+    refreshStudentsButton.disabled = false;
+  }
+});
+
+clearAllStudentsButton?.addEventListener('click', async () => {
+  if (!allStudents.length) {
+    showMessage(studentMessage, 'There are no student records to clear.');
+    return;
+  }
+  const typed = prompt(
+    'This will permanently delete all ' + allStudents.length +
+    ' student records that have no linked portal login or academic/financial history. Type DELETE ALL STUDENTS to continue:'
+  );
+  if (typed !== 'DELETE ALL STUDENTS') {
+    if (typed !== null) showMessage(studentMessage, 'Confirmation did not match. No records were deleted.', 'red');
+    return;
+  }
+  if (!confirm('Final confirmation: permanently clear the eligible student records? This cannot be undone.')) return;
+
+  clearAllStudentsButton.disabled = true;
+  showMessage(studentMessage, 'Checking records and clearing eligible students...');
+  try {
+    const result = await manageStudentRecord('delete_all');
+    studentSearch.value = '';
+    await loadStudents();
+    await loadOverviewCounts();
+    showMessage(studentMessage, result.message);
+  } catch (error) {
+    showMessage(studentMessage, error.message, 'red');
+  } finally {
+    clearAllStudentsButton.disabled = false;
   }
 });
 

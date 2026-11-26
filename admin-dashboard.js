@@ -568,6 +568,7 @@ async function loadStudents() {
       status,
       student_email,
       profile_id,
+      student_guardians(parent_id, is_primary, parents(id, profile_id, email)),
       created_at
     `)
     .order('created_at', { ascending: false });
@@ -657,12 +658,31 @@ function renderStudents(students) {
 
     actionCell.appendChild(viewButton);
 
+    const primaryGuardian = (student.student_guardians || []).find(link => link.is_primary) || (student.student_guardians || [])[0];
+    const guardianProfileId = primaryGuardian?.parents?.profile_id || null;
+    const hasPortalLogin = Boolean(student.profile_id || guardianProfileId);
     const loginButton = document.createElement('button');
     loginButton.className = 'action-button approve-button';
-    loginButton.textContent = student.profile_id ? 'Link / Check Portal' : 'Create Portal Login';
+    loginButton.textContent = hasPortalLogin ? 'Link / Check Portal' : 'Create Portal Login';
     loginButton.dataset.action = 'send-login';
     loginButton.dataset.id = student.id;
     actionCell.appendChild(loginButton);
+
+    if (hasPortalLogin) {
+      const accessButton = document.createElement('button');
+      accessButton.className = 'action-button edit-button';
+      accessButton.textContent = student.status === 'inactive' ? 'Reactivate' : 'Deactivate';
+      accessButton.dataset.action = student.status === 'inactive' ? 'account-reactivate' : 'account-deactivate';
+      accessButton.dataset.id = student.id;
+      actionCell.appendChild(accessButton);
+
+      const deleteLoginButton = document.createElement('button');
+      deleteLoginButton.className = 'action-button delete-button';
+      deleteLoginButton.textContent = 'Delete Login';
+      deleteLoginButton.dataset.action = 'account-delete-login';
+      deleteLoginButton.dataset.id = student.id;
+      actionCell.appendChild(deleteLoginButton);
+    }
 
     row.appendChild(actionCell);
     studentTableBody.appendChild(row);
@@ -734,6 +754,19 @@ function openStudentProfile(student) {
   studentProfileModal.style.display = 'block';
 }
 
+async function managePortalAccount(entityType, recordId, action) {
+  const { data, error } = await supabase.functions.invoke('manage-portal-account', {
+    body: { entity_type: entityType, record_id: recordId, action }
+  });
+  if (error) {
+    let details = {};
+    try { if (error.context?.json) details = await error.context.json(); } catch (_) {}
+    throw new Error(details.error || error.message || 'Account action failed.');
+  }
+  if (!data?.success) throw new Error(data?.error || 'Account action was not confirmed.');
+  return data;
+}
+
 async function createOrLinkStudentPortal(studentId) {
   const invoke = () => supabase.functions.invoke('provision-student-login', {
     body: { student_id: studentId }
@@ -779,6 +812,31 @@ studentTableBody.addEventListener('click', async event => {
 
   if (button.dataset.action === 'view-student') {
     openStudentProfile(student);
+    return;
+  }
+
+  if (button.dataset.action === 'account-deactivate' ||
+      button.dataset.action === 'account-reactivate' ||
+      button.dataset.action === 'account-delete-login') {
+    const action = button.dataset.action === 'account-deactivate' ? 'deactivate'
+      : button.dataset.action === 'account-reactivate' ? 'reactivate' : 'delete_login';
+    const warning = action === 'delete_login'
+      ? 'Permanently delete this portal login and its profile link? The student record and learning/payment history will remain. If this is a parent login, other linked children may also lose access.'
+      : action === 'deactivate'
+        ? 'Deactivate this portal login? The person and all learning/history records will remain.'
+        : 'Reactivate this portal login?';
+    if (!confirm(warning)) return;
+    button.disabled = true;
+    showMessage(studentMessage, 'Updating portal account...');
+    try {
+      const result = await managePortalAccount('student', student.id, action);
+      await loadStudents();
+      showMessage(studentMessage, result.message + (result.email ? ' Email: ' + result.email : '') +
+        (result.linked_children > 1 ? ' This parent login was linked to ' + result.linked_children + ' children.' : ''));
+    } catch (error) {
+      showMessage(studentMessage, error.message, 'red');
+      button.disabled = false;
+    }
     return;
   }
 
@@ -937,6 +995,23 @@ function renderResource(resourceName, records) {
     deleteButton.dataset.resource = resourceName;
 
     actionCell.appendChild(editButton);
+    if (resourceName === 'teachers' && record.profile_id) {
+      const accessButton = document.createElement('button');
+      accessButton.className = 'action-button edit-button';
+      accessButton.textContent = record.status === 'inactive' ? 'Reactivate' : 'Deactivate';
+      accessButton.dataset.action = record.status === 'inactive' ? 'account-reactivate' : 'account-deactivate';
+      accessButton.dataset.id = record.id;
+      accessButton.dataset.resource = resourceName;
+      actionCell.appendChild(accessButton);
+
+      const deleteLoginButton = document.createElement('button');
+      deleteLoginButton.className = 'action-button delete-button';
+      deleteLoginButton.textContent = 'Delete Login';
+      deleteLoginButton.dataset.action = 'account-delete-login';
+      deleteLoginButton.dataset.id = record.id;
+      deleteLoginButton.dataset.resource = resourceName;
+      actionCell.appendChild(deleteLoginButton);
+    }
     if (resourceName === 'payments' && record.status === 'pending' && record.payment_method === 'Bank Transfer') {
       const reviewButton = document.createElement('button');
       reviewButton.className = 'action-button edit-button';
@@ -1212,6 +1287,27 @@ document.addEventListener('click', async event => {
   );
 
   if (!record) return;
+
+  if (resourceName === 'teachers' && action.startsWith('account-')) {
+    const accountAction = action === 'account-deactivate' ? 'deactivate'
+      : action === 'account-reactivate' ? 'reactivate' : 'delete_login';
+    const warning = accountAction === 'delete_login'
+      ? 'Permanently delete this teacher portal login? The teacher record and historical learning/payment records will remain.'
+      : accountAction === 'deactivate'
+        ? 'Deactivate this teacher portal login?'
+        : 'Reactivate this teacher portal login?';
+    if (!confirm(warning)) return;
+    button.disabled = true;
+    try {
+      const result = await managePortalAccount('teacher', recordId, accountAction);
+      await loadResource('teachers');
+      showMessage(document.getElementById('teachersMessage'), result.message + (result.email ? ' Email: ' + result.email : ''));
+    } catch (error) {
+      showMessage(document.getElementById('teachersMessage'), error.message, 'red');
+      button.disabled = false;
+    }
+    return;
+  }
 
   if (action === 'review-payment') {
     const decision = prompt('Enter PAID to confirm funds received, or REJECTED to reject this transfer.');

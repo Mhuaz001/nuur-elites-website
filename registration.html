@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,8 +71,7 @@
       resize: vertical;
     }
 
-    /* Multiple course selection */
-
+    /* ---------- Multi-select course checkboxes ---------- */
     fieldset.course-group {
       border: none;
       padding: 0;
@@ -129,7 +127,6 @@
       margin: 0;
       flex-shrink: 0;
       accent-color: #155b37;
-      cursor: pointer;
     }
 
     button {
@@ -172,10 +169,6 @@
       .container {
         padding: 20px;
       }
-
-      .course-options {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -185,6 +178,7 @@
   <main class="container">
 
     <header>
+      <img src="images/nuur-elites-logo.png" alt="Nuur Elites official logo" style="width:100px;height:100px;object-fit:contain;margin-bottom:10px">
       <h1>NUUR ELITES</h1>
       <strong>LEARNING AND CONSULTANCY</strong>
       <p>Learning • Guidance • Excellence</p>
@@ -202,9 +196,12 @@
       <label for="dob">Date of Birth</label>
       <input type="date" id="dob" name="dob">
 
+      <label for="studentEmail">Student's Email Address (required for students aged 18 or above)</label>
+      <input type="email" id="studentEmail" name="studentEmail" autocomplete="email">
+      <p class="hint">Adult learners receive their own secure portal invitation. For learners under 18, the invitation goes to the parent or guardian.</p>
+
       <label for="location">Residential Location *</label>
-      <input type="text" id="location" name="location"
-        placeholder="City and country" required>
+      <input type="text" id="location" name="location" placeholder="City and country" required>
 
       <h2>2. Parent / Guardian Information</h2>
 
@@ -230,63 +227,50 @@
       <h2>3. Programme Selection</h2>
 
       <fieldset class="course-group" id="courseGroup">
-
         <legend>Select Your Preferred Courses *</legend>
-
-        <p class="hint">
-          You may select more than one course.
-        </p>
+        <p class="hint">You may select more than one.</p>
 
         <div class="course-options">
 
           <label>
-            <input type="checkbox" name="courseInterest"
-              value="quran-reading">
+            <input type="checkbox" name="courseInterest" value="quran-reading">
             Qur'an Reading
           </label>
 
           <label>
-            <input type="checkbox" name="courseInterest"
-              value="quran-hifz">
+            <input type="checkbox" name="courseInterest" value="quran-hifz">
             Qur'an Memorisation (Hifz)
           </label>
 
           <label>
-            <input type="checkbox" name="courseInterest"
-              value="tajweed">
+            <input type="checkbox" name="courseInterest" value="tajweed">
             Tajweed
           </label>
 
           <label>
-            <input type="checkbox" name="courseInterest"
-              value="arabic-language">
+            <input type="checkbox" name="courseInterest" value="arabic-language">
             Arabic Language
           </label>
 
           <label>
-            <input type="checkbox" name="courseInterest"
-              value="islamic-studies">
+            <input type="checkbox" name="courseInterest" value="islamic-studies">
             Islamic Studies
           </label>
 
           <label>
-            <input type="checkbox" name="courseInterest"
-              value="secular-education">
+            <input type="checkbox" name="courseInterest" value="secular-education">
             Secular Education
           </label>
 
           <label>
-            <input type="checkbox" name="courseInterest"
-              value="french-language">
+            <input type="checkbox" name="courseInterest" value="french-language">
             French Language
           </label>
 
         </div>
-
       </fieldset>
 
       <label for="deliveryMode">Preferred Learning Mode *</label>
-
       <select id="deliveryMode" name="deliveryMode" required>
         <option value="">Select learning mode</option>
         <option value="online">Online Lessons</option>
@@ -294,15 +278,17 @@
       </select>
 
       <label for="preferredSchedule">Preferred Days and Time</label>
-
-      <input type="text" id="preferredSchedule"
-        name="preferredSchedule"
+      <input type="text" id="preferredSchedule" name="preferredSchedule"
         placeholder="e.g. Saturdays and Sundays, 4:00pm">
 
       <label for="notes">Additional Information</label>
-
       <textarea id="notes" name="notes"
         placeholder="Tell us about the student's learning needs or experience."></textarea>
+
+      <label style="display:flex;align-items:flex-start;gap:10px;font-weight:normal;margin-top:20px">
+        <input type="checkbox" id="privacyConsent" required style="width:18px;height:18px;margin-top:3px;flex-shrink:0">
+        <span>I confirm that I am authorised to submit these details and have read the <a href="privacy.html" target="_blank" rel="noopener">Privacy Notice</a>.</span>
+      </label>
 
       <button type="submit" id="submitButton">
         Submit Registration
@@ -321,36 +307,20 @@
 
   </main>
 
-  <!-- Validate that at least one course is selected -->
-
+  <!-- Requires at least one course to be ticked (checkbox groups can't use "required") -->
   <script>
     (function () {
       var form = document.getElementById('applicationForm');
-
-      var boxes = document.querySelectorAll(
-        'input[name="courseInterest"]'
-      );
-
+      var boxes = document.querySelectorAll('input[name="courseInterest"]');
       var first = boxes[0];
 
       function validateCourses() {
-        var anyChecked = Array.from(boxes).some(function (box) {
-          return box.checked;
-        });
-
-        first.setCustomValidity(
-          anyChecked ? '' : 'Please select at least one course.'
-        );
+        var anyChecked = Array.prototype.some.call(boxes, function (b) { return b.checked; });
+        first.setCustomValidity(anyChecked ? '' : 'Please select at least one course.');
       }
 
-      boxes.forEach(function (box) {
-        box.addEventListener('change', validateCourses);
-      });
-
-      form.addEventListener('reset', function () {
-        setTimeout(validateCourses, 0);
-      });
-
+      boxes.forEach(function (b) { b.addEventListener('change', validateCourses); });
+      form.addEventListener('reset', function () { setTimeout(validateCourses, 0); });
       validateCourses();
     })();
   </script>

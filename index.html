@@ -18,9 +18,9 @@
   "@context": "https://schema.org",
   "@type": "EducationalOrganization",
   "name": "Nuur Elites Learning and Consultancy",
-  "slogan": "Knowledge. Guidance. Impact.",
+  "slogan": "Learning • Guidance • Excellence",
   "email": "nuurelites@gmail.com",
-  "telephone": ["+2347030837054", "+2348060116738"],
+  "telephone": "+2347030837054",
   "areaServed": "Abuja, Nigeria",
   "address": { "@type": "PostalAddress", "addressLocality": "Abuja", "addressCountry": "NG" }
 }
@@ -139,6 +139,29 @@ textarea{min-height:110px;resize:vertical}
 .map-box{margin-top:24px;border-radius:var(--radius);overflow:hidden;border:2px solid var(--gold)}
 .map-box iframe{width:100%;height:240px;border:0;display:block}
 
+/* Donations */
+.donation-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:28px}
+.donation-card{background:#fff;border:1px solid #eadfc3;border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+.donation-card h3{font-size:1.08rem;margin:8px 0}
+.donation-card p{font-size:.9rem;color:var(--muted)}
+.donation-card .ico{font-size:1.55rem}
+.donation-wrap{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch;margin-top:42px}
+.bank-panel{background:var(--green-d);color:#fff;border-radius:22px;padding:30px}
+.bank-panel h3{color:var(--gold);font-size:1.45rem;margin-bottom:8px}
+.bank-panel p{color:#e2ece5;font-size:.9rem}
+.bank-details{margin:20px 0 22px;border:1px solid rgba(201,162,74,.55);border-radius:14px;padding:18px;background:rgba(255,255,255,.06)}
+.bank-row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.13);font-size:.9rem}
+.bank-row:last-child{border-bottom:0}
+.bank-row span:first-child{color:#d7e5dc}
+.bank-row strong{text-align:right;color:#fff;overflow-wrap:anywhere}
+.donation-help{background:#fff;border-radius:22px;padding:30px;box-shadow:var(--shadow);border-top:4px solid var(--gold)}
+.donation-help h3{font-size:1.35rem;margin-bottom:10px}
+.donation-help p,.donation-help li{color:var(--muted);font-size:.92rem}
+.donation-help ol{padding-left:20px;margin:14px 0 20px}
+.donation-help li{padding:4px 0}
+.donation-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+@media(max-width:900px){.donation-wrap{grid-template-columns:1fr}.bank-row{align-items:flex-start}}
+
 /* Footer */
 footer{background:var(--green-d);color:#d8e3dc;padding:54px 0 24px}
 .foot{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:34px}
@@ -212,8 +235,9 @@ footer li{list-style:none;padding:3px 0;font-size:.9rem}
         <li><a href="#languages">Languages</a></li>
         <li><a href="#tutoring">Tutoring</a></li>
         <li><a href="#consultancy">Consultancy</a></li>
-        <li><a href="#charity">Charity</a></li>
+        <li><a href="#charity">Charity</a></li><li><a href="privacy.html">Privacy Notice</a></li>
         <li><a href="registration.html">Student Registration</a></li>
+        <li><a href="portal.html">Learning Portal</a></li>
         <li><a href="#contact" class="btn btn-gold" style="padding:9px 20px">Contact</a></li>
       </ul>
     </nav>
@@ -469,25 +493,56 @@ footer li{list-style:none;padding:3px 0;font-size:.9rem}
   <div class="container">
     <div class="sec-head reveal"><span class="eyebrow">Giving Back</span><h2>Charity &amp; Community Support</h2>
       <p>Nuur Elites is committed to supporting less-privileged members of society.</p></div>
-    <div class="cards">
-      <div class="card reveal"><div class="ico">🌙</div><h3>Ramadan &amp; Eid Relief</h3><p>Seasonal support for families in need.</p></div>
-      <div class="card reveal"><div class="ico">🎓</div><h3>Educational Scholarships</h3><p>Helping deserving learners access education.</p></div>
-      <div class="card reveal"><div class="ico">🤲</div><h3>Support for Orphans &amp; Widows</h3><p>Care and assistance for vulnerable members of society.</p></div>
-      <div class="card reveal"><div class="ico">💧</div><h3>Water Projects</h3><p>Access to clean water for communities.</p></div>
-      <div class="card reveal"><div class="ico">🕌</div><h3>Mosque Support</h3><p>Supporting the needs of local mosques.</p></div>
-      <div class="card reveal"><div class="ico">🚑</div><h3>Emergency Assistance</h3><p>Timely help in times of hardship.</p></div>
-      <div class="card reveal"><div class="ico">🌟</div><h3>Community Empowerment</h3><p>Initiatives that build self-reliance.</p></div>
+    <div class="donation-grid">
+      <article class="donation-card reveal"><div class="ico">🕌</div><h3>Masjid Project</h3><p>Contribute towards mosque construction, renovation, facilities and essential maintenance.</p></article>
+      <article class="donation-card reveal"><div class="ico">🎓</div><h3>Support a Learner</h3><p>Help a child or deserving learner access Qur'an, Islamic or other educational programmes.</p></article>
+      <article class="donation-card reveal"><div class="ico">📚</div><h3>Sponsor an Islamiyyah Programme</h3><p>Support classes, learning materials, teacher resources and educational activities.</p></article>
+      <article class="donation-card reveal"><div class="ico">🏆</div><h3>Sponsor a Qur'an Competition</h3><p>Help organise Qur'an recitation and memorisation competitions, prizes and learning events.</p></article>
+      <article class="donation-card reveal"><div class="ico">🌙</div><h3>Ramadan &amp; Eid Relief</h3><p>Provide seasonal food, essentials and support for families in need.</p></article>
+      <article class="donation-card reveal"><div class="ico">🤲</div><h3>Orphan &amp; Widow Support</h3><p>Assist vulnerable families with practical and compassionate support.</p></article>
+      <article class="donation-card reveal"><div class="ico">💧</div><h3>Clean Water Projects</h3><p>Contribute to boreholes and other community water initiatives.</p></article>
+      <article class="donation-card reveal"><div class="ico">🚑</div><h3>Emergency &amp; Community Support</h3><p>Help respond to urgent needs and community empowerment projects.</p></article>
+    </div>
+    <div class="donation-wrap">
+      <div class="bank-panel reveal">
+        <span class="eyebrow" style="color:var(--gold)">Make a contribution</span>
+        <h3>Nuur Elites Account Details</h3>
+        <p>You can make your contribution directly to the official account below. Please include your preferred support project when sending your payment evidence.</p>
+        <div class="bank-details" aria-label="Nuur Elites bank account details">
+          <div class="bank-row"><span>Bank</span><strong>Moniepoint MFB</strong></div>
+          <div class="bank-row"><span>Account Name</span><strong>NUUR ELITES SERVICES</strong></div>
+          <div class="bank-row"><span>Account Number</span><strong>8242841705</strong></div>
+          <div class="bank-row"><span>Account Type</span><strong>Corporate</strong></div>
+        </div>
+        <p style="font-size:.82rem">Kindly verify the account name and number before confirming your transfer.</p>
+      </div>
+      <div class="donation-help reveal">
+        <span class="eyebrow">After payment</span>
+        <h3>Send Payment Evidence to Admin</h3>
+        <p>After making a transfer, send your payment receipt or screenshot to the Nuur Elites administrator on WhatsApp so your contribution can be confirmed and properly recorded.</p>
+        <ol>
+          <li>Make your transfer to the account shown here.</li>
+          <li>Open WhatsApp using the button below.</li>
+          <li>State the project you are supporting and the amount sent.</li>
+          <li>Attach your transfer receipt or screenshot before sending.</li>
+        </ol>
+        <div class="donation-actions">
+          <a class="btn btn-wa" href="https://wa.me/2349039505983?text=Assalamu%20alaikum%2C%20I%20have%20made%20a%20contribution%20to%20Nuur%20Elites.%20Project%3A%20%5Benter%20project%5D.%20Amount%3A%20%5Benter%20amount%5D.%20I%20am%20attaching%20my%20payment%20evidence." target="_blank" rel="noopener">Send Payment Evidence on WhatsApp</a>
+          <a class="btn btn-outline-g" href="mailto:nuurelites@gmail.com?subject=Donation%20Payment%20Evidence">Email Admin</a>
+        </div>
+        <p class="note">WhatsApp will open a prepared message. Please attach your payment evidence in the chat before sending.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="band">
   <div class="container">
-    <h2>Support Our Initiatives</h2>
-    <p>To support or partner with our charitable initiatives, please contact us directly. We will respond with how you can help.</p>
+    <h2>Be Part of the Good We Do</h2>
+    <p>Your contribution can help a learner, strengthen an Islamiyyah programme, support a masjid project or bring relief to a family in need. May Allah reward your generosity.</p>
     <div class="actions">
-      <a class="btn btn-gold" href="https://wa.me/2349039505983?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20support%20Nuur%20Elites%20initiatives." target="_blank" rel="noopener">Contact Us to Support</a>
-      <a class="btn btn-outline" href="mailto:nuurelites@gmail.com?subject=Support%20Our%20Initiatives">Email Us</a>
+      <a class="btn btn-gold" href="#charity">Choose a Support Project</a>
+      <a class="btn btn-outline" href="https://wa.me/2349039505983?text=Assalamu%20alaikum%2C%20I%20would%20like%20to%20enquire%20about%20supporting%20Nuur%20Elites." target="_blank" rel="noopener">Speak to Admin</a>
     </div>
   </div>
 </section>
@@ -500,7 +555,7 @@ footer li{list-style:none;padding:3px 0;font-size:.9rem}
       <div class="reveal">
         <ul class="contact-list">
           <li><span>✉️</span><div><b>Email</b><a href="mailto:nuurelites@gmail.com">nuurelites@gmail.com</a></div></li>
-          <li><span>📞</span><div><b>Phone</b><a href="tel:+2347030837054">07030837054</a><br><a href="tel:+2348060116738">+234 806 011 6738</a></div></li>
+          <li><span>📞</span><div><b>Phone</b><a href="tel:+2347030837054">07030837054</a></div></li>
           <li><span>💬</span><div><b>WhatsApp</b><a href="https://wa.me/2349039505983" target="_blank" rel="noopener">09039505983</a></div></li>
           <li><span>📍</span><div><b>Location</b>Abuja, Nigeria</div></li>
           <li><span>📱</span><div><b>Facebook &amp; Instagram</b>Nuur Elites Learning and Consultancy</div></li>
@@ -543,7 +598,7 @@ footer li{list-style:none;padding:3px 0;font-size:.9rem}
         <li><a href="#about">About Us</a></li><li><a href="#islamic">Islamic Education</a></li>
         <li><a href="#secular">Secular Education</a></li><li><a href="#languages">Languages</a></li>
         <li><a href="#tutoring">Request a Tutor</a></li><li><a href="#consultancy">Consultancy</a></li>
-        <li><a href="#charity">Charity</a></li>
+        <li><a href="#charity">Charity</a></li><li><a href="privacy.html">Privacy Notice</a></li>
       </ul>
     </div>
     <div>
@@ -551,7 +606,7 @@ footer li{list-style:none;padding:3px 0;font-size:.9rem}
       <ul>
         <li><a href="mailto:nuurelites@gmail.com">nuurelites@gmail.com</a></li>
         <li><a href="tel:+2347030837054">07030837054</a></li>
-        <li><a href="tel:+2348060116738">+234 806 011 6738</a></li>
+        
         <li><a href="https://wa.me/2349039505983" target="_blank" rel="noopener">WhatsApp: 09039505983</a></li>
         <li>Abuja, Nigeria</li>
       </ul>

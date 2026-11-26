@@ -4,9 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Nuur Elites</title>
+  <title>Nuur Elites | Admin Dashboard</title>
 
   <style>
+    :root {
+      --green: #155b37;
+      --dark-green: #0b3823;
+      --gold: #c9a33b;
+      --light: #f4f7f4;
+      --white: #ffffff;
+      --text: #26352c;
+      --border: #e0e7e1;
+      --red: #a72b2b;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -15,18 +26,27 @@
 
     body {
       font-family: Arial, sans-serif;
-      background: #f4f7f4;
-      color: #26352b;
+      background: var(--light);
+      color: var(--text);
     }
 
-    header {
-      background: #155b37;
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .topbar {
+      background: var(--dark-green);
       color: white;
-      padding: 18px 25px;
+      padding: 16px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 15px;
+      flex-wrap: wrap;
     }
 
     .brand {
@@ -40,117 +60,66 @@
       height: 48px;
       object-fit: contain;
       background: white;
-      border-radius: 6px;
+      border-radius: 50%;
     }
 
-    .brand h2 {
-      font-size: 18px;
+    .brand h1 {
+      font-size: 19px;
     }
 
     .brand p {
       font-size: 12px;
+      color: #e8d59e;
       margin-top: 4px;
     }
 
-    #logoutButton {
-      background: #d9ad50;
-      color: #173b27;
+    .logout-button {
+      background: var(--gold);
+      color: #1e281e;
       border: none;
       padding: 10px 16px;
-      border-radius: 5px;
-      cursor: pointer;
+      border-radius: 6px;
       font-weight: bold;
     }
 
     .layout {
       display: flex;
-      min-height: calc(100vh - 84px);
+      min-height: calc(100vh - 80px);
     }
 
-    aside {
-      width: 230px;
-      background: #123f2a;
-      padding: 25px 15px;
+    .sidebar {
+      width: 235px;
+      background: var(--dark-green);
+      padding: 20px 12px;
       flex-shrink: 0;
     }
 
-    aside h3 {
-      color: #e5c16c;
-      font-size: 13px;
-      margin: 5px 10px 20px;
-    }
-
     .nav-button {
-      display: block;
       width: 100%;
       text-align: left;
-      background: transparent;
       color: white;
+      background: transparent;
       border: none;
-      padding: 13px 12px;
-      margin-bottom: 7px;
-      border-radius: 5px;
-      cursor: pointer;
+      padding: 13px 14px;
+      border-radius: 6px;
+      margin-bottom: 6px;
       font-size: 14px;
     }
 
     .nav-button:hover,
     .nav-button.active {
-      background: #26734a;
+      background: var(--green);
+      border-left: 4px solid var(--gold);
     }
 
-    main {
+    .main-content {
       flex: 1;
-      padding: 30px;
       min-width: 0;
-    }
-
-    .welcome {
-      margin-bottom: 25px;
-    }
-
-    .welcome h1 {
-      color: #155b37;
-      margin-bottom: 8px;
-    }
-
-    .welcome p {
-      color: #68766c;
-    }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 18px;
-    }
-
-    .stat-card {
-      background: white;
-      padding: 22px;
-      border-radius: 9px;
-      box-shadow: 0 2px 9px rgba(0,0,0,0.06);
-      border-left: 4px solid #d9ad50;
-    }
-
-    .stat-card h3 {
-      font-size: 14px;
-      color: #657269;
-      margin-bottom: 12px;
-    }
-
-    .stat-card p {
-      font-size: 28px;
-      font-weight: bold;
-      color: #155b37;
+      padding: 28px;
     }
 
     .section {
       display: none;
-      background: white;
-      margin-top: 25px;
-      padding: 25px;
-      border-radius: 9px;
-      box-shadow: 0 2px 9px rgba(0,0,0,0.05);
     }
 
     .section.active {
@@ -158,98 +127,340 @@
     }
 
     .section h2 {
-      color: #155b37;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .section-intro {
+      color: #66736a;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 16px;
+      margin: 22px 0;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 22px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--gold);
+      box-shadow: 0 3px 10px rgba(0,0,0,.04);
+    }
+
+    .stat-card h3 {
+      color: #657168;
+      font-size: 13px;
       margin-bottom: 12px;
     }
 
-    .section p {
-      color: #68766c;
-      line-height: 1.6;
+    .stat-card p {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--green);
+      overflow-wrap: anywhere;
     }
 
-    #accessMessage {
-      padding: 30px;
-      text-align: center;
-      color: #155b37;
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+      overflow: hidden;
     }
 
-    /* APPLICATION TABLE */
+    .panel h3 {
+      color: var(--green);
+      margin-bottom: 15px;
+    }
 
-    .application-table {
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+
+    .search-input {
       width: 100%;
-      border-collapse: collapse;
-      min-width: 950px;
+      max-width: 440px;
+      padding: 11px;
+      border: 1px solid #cbd6cd;
+      border-radius: 6px;
     }
 
-    .application-table th {
-      background: #155b37;
+    .primary-button {
+      background: var(--green);
       color: white;
-      padding: 12px;
-      text-align: left;
-      font-size: 13px;
+      border: none;
+      border-radius: 6px;
+      padding: 11px 16px;
+      font-weight: bold;
     }
 
-    .application-table td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      font-size: 13px;
-      vertical-align: middle;
+    .primary-button:hover {
+      background: var(--dark-green);
     }
 
-    .application-table tr:hover {
-      background: #f7faf7;
+    .danger-button {
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 11px 16px;
+      font-weight: bold;
     }
 
-    /* ACTION BUTTONS */
+    .danger-button:hover {
+      background: #7f1f1f;
+    }
 
     .action-button {
+      padding: 7px 10px;
       border: none;
-      padding: 8px 11px;
       border-radius: 5px;
-      cursor: pointer;
+      margin: 2px;
       font-size: 12px;
       font-weight: bold;
-      margin: 2px;
+    }
+
+    .view-button {
+      background: #e6eee8;
+      color: var(--green);
     }
 
     .approve-button {
-      background: #155b37;
+      background: #d9efdf;
+      color: #17642f;
+    }
+
+    .reject-button,
+    .delete-button {
+      background: #f7dddd;
+      color: var(--red);
+    }
+
+    .edit-button {
+      background: #fff0c8;
+      color: #765400;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 750px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf3ee;
+      color: var(--dark-green);
+      white-space: nowrap;
+    }
+
+    td {
+      line-height: 1.5;
+    }
+
+    .message {
+      margin: 12px 0;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,.62);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      max-width: 680px;
+      background: white;
+      margin: 35px auto;
+      padding: 25px;
+      border-radius: 10px;
+      color: var(--text);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .modal-header h2 {
+      color: var(--green);
+      font-size: 21px;
+    }
+
+    .close-button {
+      background: var(--red);
       color: white;
+      border: none;
+      padding: 8px 13px;
+      border-radius: 5px;
     }
 
-    .reject-button {
-      background: #b83232;
-      color: white;
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
     }
 
-    .action-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .profile-item {
+      padding: 12px;
+      background: #f4f7f4;
+      border-radius: 6px;
+      overflow-wrap: anywhere;
     }
 
-    @media (max-width: 700px) {
+    .profile-item strong {
+      display: block;
+      color: var(--green);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .profile-item span {
+      font-size: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-field label {
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--green);
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      width: 100%;
+      border: 1px solid #cbd6cd;
+      border-radius: 6px;
+      padding: 10px;
+      background: white;
+    }
+
+    .form-field textarea {
+      min-height: 85px;
+      resize: vertical;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .secondary-button {
+      padding: 10px 15px;
+      border: 1px solid #cbd6cd;
+      background: white;
+      border-radius: 6px;
+    }
+
+    .loading-screen {
+      padding: 35px;
+      text-align: center;
+      color: var(--green);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 850px) {
       .layout {
-        flex-direction: column;
+        display: block;
       }
 
-      aside {
+      .sidebar {
         width: 100%;
+        display: flex;
+        overflow-x: auto;
+        gap: 5px;
+        padding: 10px;
       }
 
-      aside h3 {
-        margin-bottom: 10px;
+      .nav-button {
+        width: auto;
+        white-space: nowrap;
+        margin: 0;
       }
 
-      main {
-        padding: 20px 15px;
+      .main-content {
+        padding: 18px;
       }
 
-      header {
-        padding: 14px;
+      .dashboard-cards {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .dashboard-cards,
+      .profile-grid,
+      .form-grid {
+        grid-template-columns: 1fr;
       }
 
-      .brand h2 {
+      .form-field.full {
+        grid-column: auto;
+      }
+
+      .topbar {
+        padding: 12px;
+      }
+
+      .brand h1 {
         font-size: 15px;
+      }
+
+      .main-content {
+        padding: 12px;
       }
     }
   </style>
@@ -257,28 +468,29 @@
 
 <body>
 
-  <div id="accessMessage">
+  <div id="accessMessage" class="loading-screen">
     Verifying administrator access...
   </div>
 
   <div id="dashboard" hidden>
 
-    <header>
+    <header class="topbar">
       <div class="brand">
         <img src="images/nuur-elites-logo.png" alt="Nuur Elites Logo">
         <div>
-          <h2>NUUR ELITES</h2>
+          <h1>NUUR ELITES</h1>
           <p>Learning • Guidance • Excellence</p>
         </div>
       </div>
 
-      <button id="logoutButton">Sign Out</button>
+      <button id="logoutButton" class="logout-button">
+        Sign Out
+      </button>
     </header>
 
     <div class="layout">
 
-      <aside>
-        <h3>MANAGEMENT CENTRE</h3>
+      <aside class="sidebar">
 
         <button class="nav-button active" data-section="overview">
           Dashboard Overview
@@ -301,133 +513,562 @@
         </button>
 
         <button class="nav-button" data-section="lessons">
-          Lessons & Attendance
+          Lesson Schedules
+        </button>
+
+        <button class="nav-button" data-section="enrolments">
+          Student Enrolments
+        </button>
+
+        <button class="nav-button" data-section="learning-records">
+          Attendance & Assessments
         </button>
 
         <button class="nav-button" data-section="payments">
           Payments
         </button>
+
       </aside>
 
-      <main>
-
-        <div class="welcome">
-          <h1>Welcome, Administrator</h1>
-          <p>Manage Nuur Elites Learning and Consultancy from one place.</p>
-        </div>
+      <main class="main-content">
 
         <!-- DASHBOARD OVERVIEW -->
-
         <section id="overview" class="section active">
-          <h2>Dashboard Overview</h2>
-          <p>Your management centre is ready. Select a section from the menu.</p>
 
-          <div class="dashboard-grid" style="margin-top: 25px;">
+          <h2>Dashboard Overview</h2>
+          <p class="section-intro">
+            Welcome to the Nuur Elites Learning and Consultancy administration portal.
+          </p>
+
+          <div class="dashboard-cards">
 
             <div class="stat-card">
               <h3>Applications</h3>
-              <p id="applicationCount">—</p>
+              <p id="applicationCount">0</p>
             </div>
 
             <div class="stat-card">
               <h3>Students</h3>
-              <p id="studentCount">—</p>
+              <p id="studentCount">0</p>
             </div>
 
             <div class="stat-card">
               <h3>Teachers</h3>
-              <p id="teacherCount">—</p>
+              <p id="teacherCount">0</p>
             </div>
 
             <div class="stat-card">
               <h3>Courses</h3>
-              <p id="courseCount">—</p>
+              <p id="courseCount">0</p>
+            </div>
+
+          </div>
+
+          <div class="panel">
+            <h3>Administration</h3>
+            <p>
+              Use the navigation menu to manage applications, students,
+              courses, teachers, lesson schedules, enrolments and payments.
+            </p>
+          </div>
+
+        </section>
+
+        <!-- APPLICATIONS -->
+        <section id="applications" class="section">
+
+          <h2>Student Applications</h2>
+          <p class="section-intro">
+            Review new applications and approve or reject applicants.
+          </p>
+
+          <div class="panel">
+
+            <div class="toolbar">
+              <input
+                type="search"
+                id="applicationSearch"
+                class="search-input"
+                placeholder="Search applications..."
+              >
+            </div>
+
+            <p id="applicationMessage" class="message">
+              Loading applications...
+            </p>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Guardian</th>
+                    <th>Phone</th>
+                    <th>Programme</th>
+                    <th>Learning Mode</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody id="applicationTableBody">
+                  <tr><td colspan="8">Loading...</td></tr>
+                </tbody>
+              </table>
             </div>
 
           </div>
         </section>
 
-        <!-- STUDENT APPLICATIONS -->
+        <!-- STUDENTS -->
+        <section id="students" class="section">
 
-        <section id="applications" class="section">
-
-          <h2>Student Applications</h2>
-
-          <p>
-            Review applications submitted through the Nuur Elites website.
-            Approve or reject applications from this section.
+          <h2>Student Management</h2>
+          <p class="section-intro">
+            Manage student profiles, guardians, programmes and enrolment records.
           </p>
 
-          <div style="overflow-x: auto; margin-top: 20px;">
+          <div class="dashboard-cards">
 
-            <table class="application-table">
+            <div class="stat-card">
+              <h3>Total Students</h3>
+              <p id="totalStudents">0</p>
+            </div>
 
-              <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Guardian</th>
-                  <th>Phone</th>
-                  <th>Programme(s)</th>
-                  <th>Learning Mode</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+            <div class="stat-card">
+              <h3>Active Students</h3>
+              <p id="activeStudents">0</p>
+            </div>
 
-              <tbody id="applicationTableBody">
-
-                <tr>
-                  <td colspan="7" style="padding: 20px; text-align: center;">
-                    Loading applications...
-                  </td>
-                </tr>
-
-              </tbody>
-
-            </table>
+            <div class="stat-card">
+              <h3>Inactive Students</h3>
+              <p id="inactiveStudents">0</p>
+            </div>
 
           </div>
 
-          <p id="applicationMessage" style="margin-top: 15px;"></p>
+          <div class="panel">
 
-        </section>
+            <h3>Registered Students</h3>
 
-        <!-- STUDENTS -->
+            <div class="toolbar">
+              <input
+                type="search"
+                id="studentSearch"
+                class="search-input"
+                placeholder="Search students, guardians or phone..."
+              >
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button type="button" id="refreshStudentsButton" class="secondary-button">
+                  Refresh Students
+                </button>
+                <button type="button" id="clearAllStudentsButton" class="danger-button">
+                  Clear All Student Records
+                </button>
+              </div>
+            </div>
 
-        <section id="students" class="section">
-          <h2>Student Management</h2>
-          <p>Manage student profiles, learning programmes and enrolment records.</p>
+            <p id="studentMessage" class="message">
+              Loading student records...
+            </p>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Guardian</th>
+                    <th>Phone</th>
+                    <th>Programme</th>
+                    <th>Learning Mode</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody id="studentTableBody">
+                  <tr><td colspan="8">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
         </section>
 
         <!-- COURSES -->
+        <section id="courses" class="section resource-section">
 
-        <section id="courses" class="section">
           <h2>Course Management</h2>
-          <p>Add, update and manage the programmes offered by Nuur Elites.</p>
+          <p class="section-intro">
+            Create, update and manage Nuur Elites learning programmes.
+          </p>
+
+          <div class="panel">
+            <div class="toolbar">
+              <input id="coursesSearch" class="search-input" type="search"
+                placeholder="Search courses...">
+
+              <button class="primary-button add-record" data-resource="courses">
+                + Add Course
+              </button>
+            </div>
+
+            <p id="coursesMessage" class="message"></p>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Course Name</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Fee</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="coursesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <!-- TEACHERS -->
+        <section id="teachers" class="section resource-section">
 
-        <section id="teachers" class="section">
           <h2>Teacher Management</h2>
-          <p>Manage tutors, teacher profiles and teaching assignments.</p>
+          <p class="section-intro">
+            Manage tutors, qualifications, contact information and availability.
+          </p>
+
+          <div class="panel">
+            <div class="toolbar">
+              <input id="teachersSearch" class="search-input" type="search"
+                placeholder="Search teachers...">
+
+              <button class="primary-button add-record" data-resource="teachers">
+                + Add Teacher
+              </button>
+            </div>
+
+            <p id="teachersMessage" class="message"></p>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Teacher</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Qualification</th>
+                    <th>Specialisation</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="teachersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <!-- LESSONS -->
+        <section id="lessons" class="section resource-section">
 
-        <section id="lessons" class="section">
-          <h2>Lessons & Attendance</h2>
-          <p>Manage lesson schedules, class records and attendance.</p>
+          <h2>Lesson Schedules</h2>
+          <p class="section-intro">
+            Create recurring lesson schedules linked to an existing student enrolment. Copy the Enrolment UUID from Student Enrolments and paste it into the schedule form. Teachers record attendance from their portal.
+          </p>
+
+          <div class="panel">
+            <div class="toolbar">
+              <input id="lessonsSearch" class="search-input" type="search"
+                placeholder="Search lesson schedules...">
+
+              <button class="primary-button add-record" data-resource="lessons">
+                + Add Lesson Schedule
+              </button>
+            </div>
+
+            <p id="lessonsMessage" class="message"></p>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Enrolment ID</th>
+                    <th>Weekday</th>
+                    <th>Start Time</th>
+                    <th>Duration</th>
+                    <th>Timezone</th>
+                    <th>Meeting Link</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="lessonsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- STUDENT ENROLMENTS -->
+        <section id="enrolments" class="section">
+          <h2>Student Enrolments</h2>
+          <p class="section-intro">Assign approved students to active courses so they can access the correct learning materials and assignments in their portal.</p>
+          <div class="panel">
+            <form id="enrolmentForm" class="form-grid">
+              <div class="form-group">
+                <label for="enrolmentStudent">Student</label>
+                <select id="enrolmentStudent" required></select>
+              </div>
+              <div class="form-group">
+                <label for="enrolmentCourse">Course</label>
+                <select id="enrolmentCourse" required></select>
+              </div>
+              <div class="form-group">
+                <label for="enrolmentTeacher">Assigned Teacher</label>
+                <select id="enrolmentTeacher" required></select>
+              </div>
+              <div class="form-group">
+                <label for="enrolmentStatus">Status</label>
+                <select id="enrolmentStatus"><option value="active">Active</option><option value="paused">Paused</option><option value="completed">Completed</option><option value="withdrawn">Withdrawn</option></select>
+              </div>
+              <div class="form-group">
+                <label for="enrolmentFee">Tuition fee (NGN)</label>
+                <input id="enrolmentFee" type="number" min="0" step="1" required placeholder="Enter agreed course fee">
+              </div>
+              <div class="form-group" style="align-self:end">
+                <button type="submit" class="primary-button" id="saveEnrolmentButton">Assign Course</button>
+              </div>
+            </form>
+            <p id="enrolmentMessage" class="message"></p>
+          </div>
+          <div class="panel" style="margin-top:20px">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Enrolment UUID</th><th>Student</th><th>Course</th><th>Teacher</th><th>Enrolled</th><th>Tuition Fee</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="enrolmentTableBody"><tr><td colspan="8">Open this section to load enrolments.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- LEARNING RECORDS -->
+        <section id="learning-records" class="section">
+          <h2>Attendance & Assessments</h2>
+          <p class="section-intro">Review attendance records and teacher assessment results across the learning programme.</p>
+          <p id="learningRecordsMessage" class="message"></p>
+          <div class="panel">
+            <h3>Attendance Records</h3>
+            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Lesson Date</th><th>Status</th><th>Schedule ID</th><th>Notes</th></tr></thead><tbody id="attendanceAdminTableBody"><tr><td colspan="5">Open this section to load attendance records.</td></tr></tbody></table></div>
+          </div>
+          <div class="panel" style="margin-top:20px">
+            <h3>Assessment Results</h3>
+            <div class="table-wrap"><table><thead><tr><th>Student</th><th>Teacher</th><th>Assessment</th><th>Score</th><th>Date</th><th>Feedback</th></tr></thead><tbody id="assessmentAdminTableBody"><tr><td colspan="6">Open this section to load assessment records.</td></tr></tbody></table></div>
+          </div>
         </section>
 
         <!-- PAYMENTS -->
+        <section id="payments" class="section resource-section">
 
-        <section id="payments" class="section">
-          <h2>Payments & Fees</h2>
-          <p>Manage student fees, payment records and outstanding balances.</p>
+          <h2>Payment Management</h2>
+          <p class="section-intro">
+            Review bank-transfer submissions, confirm funds received in the bank account, and manage payment instructions.
+          </p>
+
+          <div class="panel" style="margin-bottom:20px">
+            <h3>Bank transfer instructions</h3>
+            <form id="bankInstructionsForm" class="form-grid">
+              <div><label for="bankName">Bank name</label><input id="bankName" required></div>
+              <div><label for="bankAccountType">Account type</label><input id="bankAccountType"></div>
+              <div><label for="bankAccountName">Account name</label><input id="bankAccountName" required></div>
+              <div><label for="bankAccountNumber">Account number</label><input id="bankAccountNumber" required maxlength="20"></div>
+              <div class="wide"><label for="bankInstructionsText">Instructions shown to learners</label><textarea id="bankInstructionsText" rows="3"></textarea></div>
+              <div class="wide"><label><input id="bankInstructionsActive" type="checkbox" style="width:auto"> Make bank transfer available to learners</label><small class="muted">Leave unticked until Nuur Elites is ready to accept transfers through the portal.</small></div>
+              <div class="wide"><button class="primary-button" type="submit">Save bank instructions</button><p id="bankInstructionsMessage" class="message"></p></div>
+            </form>
+          </div>
+
+          <div class="dashboard-cards">
+
+            <div class="stat-card">
+              <h3>Total Payments Recorded</h3>
+              <p id="paymentCount">0</p>
+            </div>
+
+            <div class="stat-card">
+              <h3>Successful Payments</h3>
+              <p id="successfulPaymentCount">0</p>
+            </div>
+
+            <div class="stat-card">
+              <h3>Total NGN Received</h3>
+              <p id="paymentTotal">₦0</p>
+            </div>
+
+          </div>
+
+          <div class="panel">
+            <div class="toolbar">
+              <input id="paymentsSearch" class="search-input" type="search"
+                placeholder="Search payments...">
+
+              <button class="primary-button add-record" data-resource="payments">
+                + Record Payment
+              </button>
+            </div>
+
+            <p id="paymentsMessage" class="message"></p>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Amount</th>
+                    <th>Currency</th>
+                    <th>Payment Date</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Status</th>
+                    <th>Sender</th>
+                    <th>Proof</th>
+                    <th>Reviewed</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
       </main>
+    </div>
+  </div>
+
+  <!-- STUDENT PROFILE MODAL -->
+  <div id="studentProfileModal" class="modal">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h2>Student Profile</h2>
+        <button class="close-button" data-close="studentProfileModal">
+          Close
+        </button>
+      </div>
+
+      <div class="profile-grid">
+
+        <div class="profile-item">
+          <strong>Student Name</strong>
+          <span id="profileStudentName">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Date of Birth</strong>
+          <span id="profileDateOfBirth">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Location</strong>
+          <span id="profileLocation">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Student Status</strong>
+          <span id="profileStatus">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Guardian Name</strong>
+          <span id="profileGuardianName">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Student Email</strong>
+          <span id="profileStudentEmail">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Guardian Email</strong>
+          <span id="profileGuardianEmail">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Guardian Phone</strong>
+          <span id="profileGuardianPhone">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Relationship</strong>
+          <span id="profileRelationship">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Programme</strong>
+          <span id="profileProgramme">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Learning Mode</strong>
+          <span id="profileLearningMode">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Preferred Schedule</strong>
+          <span id="profileSchedule">—</span>
+        </div>
+
+        <div class="profile-item">
+          <strong>Date Registered</strong>
+          <span id="profileRegistrationDate">—</span>
+        </div>
+
+        <div class="profile-item" style="grid-column:1/-1">
+          <strong>Additional Notes</strong>
+          <span id="profileNotes">—</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE / EDIT MODAL -->
+  <div id="recordModal" class="modal">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h2 id="recordModalTitle">Add Record</h2>
+
+        <button class="close-button" data-close="recordModal">
+          Close
+        </button>
+      </div>
+
+      <form id="recordForm">
+
+        <div id="recordFormFields" class="form-grid"></div>
+
+        <p id="recordFormMessage" class="message"></p>
+
+        <div class="form-actions">
+
+          <button type="button" class="secondary-button"
+            data-close="recordModal">
+            Cancel
+          </button>
+
+          <button type="submit" class="primary-button" id="saveRecordButton">
+            Save Record
+          </button>
+
+        </div>
+
+      </form>
     </div>
   </div>
 

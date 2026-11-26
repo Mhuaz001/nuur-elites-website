@@ -1,0 +1,14 @@
+{
+  "project": "Nuur Elites Learning and Consultancy",
+  "release": "merged-deployment-candidate-2026-11-15",
+  "primary_source": "NUUR_ELITES_DEPLOYMENT_CANDIDATE_2026-11-15(1).zip",
+  "merged_with": "nuur_elites_completed_package(1).zip",
+  "excluded_legacy_migration": "nuur_elites_completed_package(1).zip: nuur_elites_project/sql/complete-platform-migration.sql",
+  "checks": [
+    "browser JavaScript syntax",
+    "HTML static ID references",
+    "local HTML asset references",
+    "ZIP integrity"
+  ],
+  "live_services_tested": false
+}

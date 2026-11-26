@@ -1,7 +1,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Supabase connection
+// Replace these two values with your own Supabase details.
 const SUPABASE_URL = 'https://lrcnworfhrrntdltzgpe.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_yBLxiC7z_ZymMMveeQN9Ug_Bok2ubsZ';
 
@@ -10,79 +10,96 @@ const supabase = createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
-// Form elements
 const form = document.getElementById('applicationForm');
 const message = document.getElementById('formMessage');
 const submitButton = document.getElementById('submitButton');
 
-// Collect all selected courses
-function getSelectedCourses() {
-  return Array.from(
-    document.querySelectorAll('input[name="courseInterest"]:checked')
-  ).map(input => input.value);
-}
-
-// Submit registration
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
-  // Get selected courses
-  const selectedCourses = getSelectedCourses();
-
-  // Check that at least one course is selected
-  if (selectedCourses.length === 0) {
-    message.textContent = 'Please select at least one programme.';
-    message.style.color = 'red';
-    return;
-  }
-
-  // Disable button during submission
   submitButton.disabled = true;
   submitButton.textContent = 'Submitting...';
-
   message.textContent = 'Please wait while we submit your application.';
   message.style.color = '#155b37';
 
-  // Collect application information
   const application = {
     student_name: document.getElementById('studentName').value.trim(),
-
     date_of_birth: document.getElementById('dob').value || null,
-
+    student_email: document.getElementById('studentEmail').value.trim() || null,
     location: document.getElementById('location').value.trim(),
-
     guardian_name: document.getElementById('guardianName').value.trim(),
-
     relationship: document.getElementById('relationship').value,
-
     guardian_phone: document.getElementById('guardianPhone').value.trim(),
-
     guardian_email: document.getElementById('guardianEmail').value.trim() || null,
-
-    // Save all selected courses
-    course_interest: selectedCourses.join(', '),
-
+    course_interest: Array.from(
+  document.querySelectorAll('input[name="courseInterest"]:checked')
+).map(input => input.value).join(', '),
     delivery_mode: document.getElementById('deliveryMode').value,
-
     preferred_schedule: document.getElementById('preferredSchedule').value.trim() || null,
-
     additional_notes: document.getElementById('notes').value.trim() || null,
-
+    privacy_consent: document.getElementById('privacyConsent').checked,
     status: 'pending'
   };
+if (!application.course_interest) {
+  message.textContent = 'Please select at least one programme.';
+  message.style.color = 'red';
+  submitButton.disabled = false;
+  submitButton.textContent = 'Submit Registration';
+  return;
+}
 
+const ageOnToday = (dob) => {
+  if (!dob) return null;
+  const birth = new Date(`${dob}T00:00:00`);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today.getMonth() < birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+  return age;
+};
+const applicantAge = ageOnToday(application.date_of_birth);
+if (applicantAge !== null && applicantAge >= 18 && !application.student_email) {
+  message.textContent = 'Please provide the adult student’s email address for their portal invitation.';
+  message.style.color = 'red';
+  submitButton.disabled = false;
+  submitButton.textContent = 'Submit Registration';
+  return;
+}
+if ((applicantAge === null || applicantAge < 18) && !application.guardian_email) {
+  message.textContent = 'Please provide the parent or guardian’s email address for the portal invitation.';
+  message.style.color = 'red';
+  submitButton.disabled = false;
+  submitButton.textContent = 'Submit Registration';
+  return;
+}
   try {
-    const { error } = await supabase
+    const { data: insertedApplication, error } = await supabase
       .from('student_applications')
-      .insert([application]);
+      .insert([application])
+      .select('id')
+      .single();
 
     if (error) {
       throw error;
     }
 
+    // The application is already saved. A notification failure must not make
+    // the applicant think the registration itself failed.
+    try {
+      const { data: notification, error: notificationError } =
+        await supabase.functions.invoke('notify-new-application', {
+          body: { application_id: insertedApplication.id }
+        });
+
+      if (notificationError || notification?.error) {
+        console.error('Admin email notification failed:', notificationError || notification);
+      }
+    } catch (notificationError) {
+      console.error('Admin email notification failed:', notificationError);
+    }
+
     message.textContent =
       'Thank you! Your registration has been submitted successfully. Our team will contact you.';
-
     message.style.color = 'green';
 
     form.reset();
@@ -92,7 +109,6 @@ form.addEventListener('submit', async (event) => {
 
     message.textContent =
       'We could not submit your application. Please try again or contact our office.';
-
     message.style.color = 'red';
 
   } finally {

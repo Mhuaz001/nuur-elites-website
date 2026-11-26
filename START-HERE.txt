@@ -1,0 +1,18 @@
+NUUR ELITES — DEPLOYMENT CANDIDATE (REVIEW BRANCH)
+
+Current status: the website source is in GitHub branch manual-bank-transfer-nov-2026. A draft pull request is open against main. Do not merge until the review and role-based tests are complete.
+
+1. Keep a backup of the website folder and Supabase database before further changes.
+2. Read README-SETUP.md and SECURITY-REVIEW.md.
+3. The additive LMS alignment migration is already recorded as applied in the connected Supabase project on 25 November 2026. Do NOT run it again against that project.
+4. The migration source is retained at supabase/migrations/20261125180031_nuur_elites_lms_alignment.sql for audit/reference.
+5. The live manual bank-transfer instruction row is configured but inactive. Do NOT activate it until explicitly authorised by Nuur Elites.
+6. Open the site locally through a web server (for example, VS Code Live Server), starting at index.html.
+7. Registration now collects the adult learner email and guardian email. On approval, the admin dashboard invokes the protected provision-student-login Edge Function to create/link an adult student account or a parent account for minors.
+8. Test enrolments, schedules, attendance, assessments, materials, assignments, submissions and grading.
+9. Configure custom SMTP for Supabase Auth email delivery and allow https://nuurelites.netlify.app/reset-password.html in Authentication → URL Configuration. Default SMTP cannot send to ordinary family email addresses.
+10. Complete every item in the production checklist before merging or announcing the platform as operational.
+
+Verified so far: student_email columns and approval RPC are applied; the provision-student-login Edge Function is active with JWT verification; source files are committed to this review branch; the connected Supabase project is active; the LMS resource tables and relevant payment/privacy columns exist; the manual bank-transfer instruction record is inactive.
+
+Not yet verified: complete authenticated browser journeys for each role, real payment submission/review, final hosting-domain redirects, and production release. Static code checks are not a substitute for these tests.

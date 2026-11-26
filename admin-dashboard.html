@@ -209,6 +209,19 @@
       background: var(--dark-green);
     }
 
+    .danger-button {
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 11px 16px;
+      font-weight: bold;
+    }
+
+    .danger-button:hover {
+      background: #7f1f1f;
+    }
+
     .action-button {
       padding: 7px 10px;
       border: none;
@@ -646,6 +659,14 @@
                 class="search-input"
                 placeholder="Search students, guardians or phone..."
               >
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button type="button" id="refreshStudentsButton" class="secondary-button">
+                  Refresh Students
+                </button>
+                <button type="button" id="clearAllStudentsButton" class="danger-button">
+                  Clear All Student Records
+                </button>
+              </div>
             </div>
 
             <p id="studentMessage" class="message">

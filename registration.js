@@ -73,12 +73,29 @@ if ((applicantAge === null || applicantAge < 18) && !application.guardian_email)
   return;
 }
   try {
-    const { error } = await supabase
+    const { data: insertedApplication, error } = await supabase
       .from('student_applications')
-      .insert([application]);
+      .insert([application])
+      .select('id')
+      .single();
 
     if (error) {
       throw error;
+    }
+
+    // The application is already saved. A notification failure must not make
+    // the applicant think the registration itself failed.
+    try {
+      const { data: notification, error: notificationError } =
+        await supabase.functions.invoke('notify-new-application', {
+          body: { application_id: insertedApplication.id }
+        });
+
+      if (notificationError || notification?.error) {
+        console.error('Admin email notification failed:', notificationError || notification);
+      }
+    } catch (notificationError) {
+      console.error('Admin email notification failed:', notificationError);
     }
 
     message.textContent =

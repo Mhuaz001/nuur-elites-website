@@ -200,3 +200,14 @@ Supabase database and Edge Functions remain hosted in Supabase; publishing the s
 ## 12. Current deployment review status
 
 The connected Supabase project was checked on 25 November 2026. The project is active, the LMS resource tables and related columns exist, and the bank-transfer instructions are configured but inactive. This does not prove the complete website has passed authenticated end-to-end testing. See `SECURITY-REVIEW.md` for current advisor findings and remaining security work. Do not merge or announce production readiness until role-based tests and the production checklist are complete.
+
+
+## Administrator portal account controls
+
+The administrator dashboard provides account actions for linked student, parent/guardian and teacher logins:
+
+- **Deactivate** suspends authentication access and marks the associated student/teacher record inactive. Learning, enrolment, attendance, assessment and payment history is retained.
+- **Reactivate** restores the existing login and password and marks the associated student/teacher record active.
+- **Delete Login** removes the authentication user and its profile association only. The student/teacher/parent records and historical academic and financial records are retained. A student or teacher record remains in the LMS so a new login can be linked later.
+- For minors, the portal login belongs to the primary parent/guardian. Deleting or suspending that login can affect other children linked to the same guardian account.
+- These actions are available only to authenticated administrators through the `manage-portal-account` Edge Function, which verifies the caller's JWT and admin role. The function requires JWT verification.
